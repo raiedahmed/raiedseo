@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block page_title %}إنشاء خريطة موقع XML{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">إنشاء خريطة موقع XML</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('sitemap') }}">
+                    <div class="mb-4">
+                        <label for="url" class="form-label">رابط الموقع</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                            <input type="url" class="form-control" id="url" name="url" placeholder="https://example.com" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sitemap me-2"></i> إنشاء خريطة الموقع
+                            </button>
+                        </div>
+                        <div class="form-text">أدخل رابط الموقع لإنشاء خريطة الموقع XML</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">خيارات الزحف</h6>
+                                    <a href="#crawlOptions" data-bs-toggle="collapse" role="button" aria-expanded="true">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </a>
+                                </div>
+                                <div class="card-body collapse show" id="crawlOptions">
+                                    <div class="mb-3">
+                                        <label for="depth" class="form-label">عمق الزحف</label>
+                                        <select class="form-select" id="depth" name="depth">
+                                            <option value="1">1 (سريع)</option>
+                                            <option value="2">2</option>
+                                            <option value="3" selected>3 (متوسط)</option>
+                                            <option value="5">5</option>
+                                            <option value="10">10 (شامل)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">خيارات خريطة الموقع</h6>
+                                    <a href="#sitemapOptions" data-bs-toggle="collapse" role="button" aria-expanded="true">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </a>
+                                </div>
+                                <div class="card-body collapse show" id="sitemapOptions">
+                                    <div class="mb-3">
+                                        <label for="output" class="form-label">اسم ملف الخرج</label>
+                                        <input type="text" class="form-control" id="output" name="output" value="sitemap.xml">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="changefreq" class="form-label">تكرار التغيير</label>
+                                        <select class="form-select" id="changefreq" name="changefreq">
+                                            <option value="always">always</option>
+                                            <option value="hourly">hourly</option>
+                                            <option value="daily">daily</option>
+                                            <option value="weekly" selected>weekly</option>
+                                            <option value="monthly">monthly</option>
+                                            <option value="yearly">yearly</option>
+                                            <option value="never">never</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="priority" class="form-label">الأولوية</label>
+                                        <input type="range" class="form-range" min="0" max="1" step="0.1" value="0.5" id="priority" name="priority">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0.0</small>
+                                            <small>0.5</small>
+                                            <small>1.0</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">حول خرائط المواقع XML</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">ما هي خريطة الموقع XML؟</h6>
+                        <p>خريطة الموقع هي ملف XML يحتوي على قائمة بجميع روابط موقع الويب الخاص بك. وهي تساعد محركات البحث في فهرسة موقعك بشكل أفضل وأسرع.</p>
+                        
+                        <h6 class="mb-3 mt-4">فوائد خريطة الموقع</h6>
+                        <ul>
+                            <li>مساعدة محركات البحث في اكتشاف جميع صفحات موقعك</li>
+                            <li>تحسين فهرسة الصفحات المخفية أو العميقة</li>
+                            <li>تمكين الزحف الأكثر ذكاءً للموقع</li>
+                            <li>توفير معلومات إضافية عن صفحات موقعك</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">كيفية استخدام خريطة الموقع</h6>
+                        <ol>
+                            <li>قم بإنشاء خريطة الموقع باستخدام هذه الأداة</li>
+                            <li>قم بتحميل الملف الناتج إلى جذر موقعك (عادة مع اسم sitemap.xml)</li>
+                            <li>أضف الرابط إلى ملف robots.txt:<br>
+                            <code>Sitemap: https://example.com/sitemap.xml</code></li>
+                            <li>قم بتقديم الخريطة إلى أدوات مشرفي المواقع في Google و Bing</li>
+                        </ol>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            يمكنك إعادة إنشاء خريطة الموقع دوريًا للتأكد من أن محركات البحث لديها أحدث المعلومات عن موقعك.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

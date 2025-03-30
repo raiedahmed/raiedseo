@@ -1,0 +1,15 @@
+api_keys:
+  openai: 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
+  pagespeed: AIzaSyDWlVJyQr0xg64Yw4IE2IaSX-NE4tFPU4s
+crawling:
+  delay_seconds: 1.0
+  max_pages: 100
+  respect_robots_txt: true
+  timeout_seconds: 30
+seo_analysis:
+  meta_description:
+    max_length: 160
+    min_length: 70
+  title:
+    max_length: 60
+    min_length: 30

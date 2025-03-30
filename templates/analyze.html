@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block page_title %}تحليل السيو{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">تحليل موقع جديد</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('analyze') }}">
+                    <div class="mb-4">
+                        <label for="url" class="form-label">رابط الموقع</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                            <input type="url" class="form-control" id="url" name="url" placeholder="https://example.com" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i> بدء التحليل
+                            </button>
+                        </div>
+                        <div class="form-text">أدخل رابط الموقع الذي تريد تحليله</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">خيارات الزحف</h6>
+                                    <a href="#crawlOptions" data-bs-toggle="collapse" role="button" aria-expanded="true">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </a>
+                                </div>
+                                <div class="card-body collapse show" id="crawlOptions">
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="single_page" name="single_page">
+                                        <label class="form-check-label" for="single_page">تحليل صفحة واحدة فقط</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="depth" class="form-label">عمق الزحف</label>
+                                        <select class="form-select" id="depth" name="depth">
+                                            <option value="1">1 (سريع)</option>
+                                            <option value="2">2</option>
+                                            <option value="3" selected>3 (متوسط)</option>
+                                            <option value="5">5</option>
+                                            <option value="10">10 (شامل)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">خيارات التحليل</h6>
+                                    <a href="#analysisOptions" data-bs-toggle="collapse" role="button" aria-expanded="true">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </a>
+                                </div>
+                                <div class="card-body collapse show" id="analysisOptions">
+                                    <div class="mb-3">
+                                        <label for="export_format" class="form-label">تنسيق التقرير</label>
+                                        <select class="form-select" id="export_format" name="export_format">
+                                            <option value="json">JSON (للمطورين)</option>
+                                            <option value="html">HTML (تقرير تفاعلي)</option>
+                                            <option value="pdf">PDF (تقرير للطباعة)</option>
+                                            <option value="all" selected>كل التنسيقات</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="auto_fix" name="auto_fix">
+                                        <label class="form-check-label" for="auto_fix">إصلاح المشاكل تلقائياً</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 mb-2">
+                        <div class="card bg-light">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">إعدادات WordPress</h6>
+                                <a href="#wpOptions" data-bs-toggle="collapse" role="button" aria-expanded="false">
+                                    <i class="fas fa-chevron-down"></i>
+                                </a>
+                            </div>
+                            <div class="card-body collapse" id="wpOptions">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="wp_api" name="wp_api">
+                                    <label class="form-check-label" for="wp_api">استخدام WordPress API</label>
+                                </div>
+                                <div class="row" id="wpCredentials" style="display: none;">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="wp_username" class="form-label">اسم المستخدم</label>
+                                            <input type="text" class="form-control" id="wp_username" name="wp_username">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="wp_password" class="form-label">كلمة المرور</label>
+                                            <input type="password" class="form-control" id="wp_password" name="wp_password">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">ماذا سيتم تحليله؟</h5>
+            </div>
+            <div class="card-body">
+                <div class="row analysis-features">
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-heading"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل العناوين والأوصاف</h5>
+                                <ul>
+                                    <li>العناوين الرئيسية (H1)</li>
+                                    <li>وسوم العنوان (Title)</li>
+                                    <li>الأوصاف التعريفية (Meta Description)</li>
+                                    <li>الكلمات المفتاحية</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل المحتوى</h5>
+                                <ul>
+                                    <li>جودة وطول المحتوى</li>
+                                    <li>التركيب اللغوي والقراءة</li>
+                                    <li>كثافة الكلمات المفتاحية</li>
+                                    <li>المحتوى المكرر</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل الصور والوسائط</h5>
+                                <ul>
+                                    <li>النصوص البديلة للصور (Alt Text)</li>
+                                    <li>حجم وجودة الصور</li>
+                                    <li>تحسين الصور</li>
+                                    <li>تنسيقات الصور المناسبة</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل الروابط</h5>
+                                <ul>
+                                    <li>الروابط الداخلية</li>
+                                    <li>الروابط الخارجية</li>
+                                    <li>الروابط المكسورة</li>
+                                    <li>نصوص الروابط</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل توافق الأجهزة</h5>
+                                <ul>
+                                    <li>التصميم المتجاوب</li>
+                                    <li>الأداء على الهواتف المحمولة</li>
+                                    <li>سهولة التنقل</li>
+                                    <li>حجم العناصر القابلة للنقر</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h5>تحليل سرعة الموقع</h5>
+                                <ul>
+                                    <li>وقت التحميل</li>
+                                    <li>تحسين JavaScript و CSS</li>
+                                    <li>ضغط الملفات</li>
+                                    <li>استخدام التخزين المؤقت</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // إظهار/إخفاء حقول بيانات WordPress
+    document.addEventListener('DOMContentLoaded', function() {
+        const wpApiCheckbox = document.getElementById('wp_api');
+        const wpCredentials = document.getElementById('wpCredentials');
+        
+        wpApiCheckbox.addEventListener('change', function() {
+            wpCredentials.style.display = this.checked ? 'flex' : 'none';
+        });
+    });
+</script>
+{% endblock %}

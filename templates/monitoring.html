@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}RSEO - نظام المراقبة والتقارير الدورية{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>نظام المراقبة والتقارير الدورية</h5>
+                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+                        <i class="fas fa-plus"></i> مهمة جديدة
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        نظام المراقبة يساعدك على متابعة أداء مواقعك بشكل دوري وتلقائي، ويمكنك من متابعة التغييرات في مؤشرات السيو الرئيسية مع مرور الوقت.
+                    </div>
+                    
+                    <!-- لوحة الإحصائيات -->
+                    <div class="row">
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">المواقع المراقبة</h6>
+                                            <h2 class="mb-0">{{ tasks|length }}</h2>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-globe fa-3x opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">التقارير الكلية</h6>
+                                            <h2 class="mb-0">{{ total_reports }}</h2>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">متوسط النتيجة</h6>
+                                            <h2 class="mb-0">{{ average_score }}%</h2>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-star-half-alt fa-3x opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">المشاكل النشطة</h6>
+                                            <h2 class="mb-0">{{ total_issues }}</h2>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- المهام المجدولة -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>المهام المجدولة</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>الموقع</th>
+                                            <th>التكرار</th>
+                                            <th>آخر تحليل</th>
+                                            <th>النتيجة</th>
+                                            <th>المشاكل</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if tasks %}
+                                            {% for task in tasks %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{{ task.url }}" target="_blank">{{ task.url }}</a>
+                                                    </td>
+                                                    <td>
+                                                        {% if task.frequency == 'daily' %}
+                                                            <span class="badge bg-info">يومي</span>
+                                                        {% elif task.frequency == 'weekly' %}
+                                                            <span class="badge bg-primary">أسبوعي</span>
+                                                        {% elif task.frequency == 'monthly' %}
+                                                            <span class="badge bg-secondary">شهري</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ task.latest_analysis or 'لا يوجد' }}</td>
+                                                    <td>
+                                                        {% if task.score %}
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar {{ 'bg-success' if task.score >= 80 else 'bg-warning' if task.score >= 60 else 'bg-danger' }}" 
+                                                                     role="progressbar" 
+                                                                     style="width: {{ task.score }}%;" 
+                                                                     aria-valuenow="{{ task.score }}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
+                                                                    {{ task.score }}%
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            -
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ task.issues or 0 }}</td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a href="{{ url_for('monitoring_task_details', task_id=task.task_id) }}" class="btn btn-sm btn-info">
+                                                                <i class="fas fa-chart-bar"></i>
+                                                            </a>
+                                                            <a href="{{ url_for('monitoring_run_task', task_id=task.task_id) }}" class="btn btn-sm btn-success">
+                                                                <i class="fas fa-play"></i>
+                                                            </a>
+                                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#deleteTaskModal" 
+                                                                    data-task-id="{{ task.task_id }}" 
+                                                                    data-task-url="{{ task.url }}">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                                        <p>لا توجد مهام مجدولة حالياً</p>
+                                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+                                                            <i class="fas fa-plus me-1"></i> إضافة مهمة جديدة
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- الرسم البياني لمقارنة الأداء -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>مقارنة أداء المواقع</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if tasks %}
+                                <canvas id="performanceChart" height="300"></canvas>
+                            {% else %}
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                    <p>قم بإضافة مواقع للمراقبة لعرض بيانات المقارنة</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال إضافة مهمة جديدة -->
+<div class="modal fade" id="newTaskModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('monitoring_add_task') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newTaskModalLabel">إضافة مهمة مراقبة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="url" class="form-label">رابط الموقع <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="url" name="url" placeholder="https://example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label">تكرار المراقبة</label>
+                        <select class="form-select" id="frequency" name="frequency">
+                            <option value="daily">يومي</option>
+                            <option value="weekly" selected>أسبوعي</option>
+                            <option value="monthly">شهري</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeOptions" class="form-label">توقيت المراقبة</label>
+                        <div id="timeOptions">
+                            <!-- يتم تحديثها ديناميكياً بناءً على التكرار -->
+                            <div class="weekly-options">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="day_of_week" class="form-label">اليوم</label>
+                                        <select class="form-select" id="day_of_week" name="day_of_week">
+                                            <option value="mon">الإثنين</option>
+                                            <option value="tue">الثلاثاء</option>
+                                            <option value="wed">الأربعاء</option>
+                                            <option value="thu">الخميس</option>
+                                            <option value="fri">الجمعة</option>
+                                            <option value="sat">السبت</option>
+                                            <option value="sun">الأحد</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="hour" class="form-label">الساعة</label>
+                                        <select class="form-select" id="hour" name="hour">
+                                            {% for h in range(0, 24) %}
+                                                <option value="{{ h }}" {{ 'selected' if h == 3 }}>{{ h }}:00</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="notify" name="notify">
+                            <label class="form-check-label" for="notify">
+                                إرسال تنبيه بالبريد الإلكتروني بعد كل تحليل
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="max_pages" class="form-label">الحد الأقصى للصفحات</label>
+                            <input type="number" class="form-control" id="max_pages" name="max_pages" value="100" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="depth" class="form-label">عمق الزحف</label>
+                            <input type="number" class="form-control" id="depth" name="depth" value="3" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="submit" class="btn btn-primary">إضافة المهمة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- مودال حذف مهمة -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('monitoring_remove_task') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteTaskModalLabel">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من رغبتك في حذف مهمة المراقبة لـ <span id="deleteTaskUrl"></span>؟</p>
+                    <p class="text-danger">سيتم حذف المهمة نهائياً من الجدول، ولكن سيتم الاحتفاظ بتقارير التحليل السابقة.</p>
+                    <input type="hidden" id="deleteTaskId" name="task_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحديث خيارات الوقت بناءً على التكرار
+        const frequencySelect = document.getElementById('frequency');
+        const timeOptionsDiv = document.getElementById('timeOptions');
+        
+        frequencySelect.addEventListener('change', function() {
+            const frequency = this.value;
+            let timeOptionsHTML = '';
+            
+            if (frequency === 'daily') {
+                timeOptionsHTML = `
+                    <div class="daily-options">
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label for="hour" class="form-label">الساعة</label>
+                                <select class="form-select" id="hour" name="hour">
+                                    {% for h in range(0, 24) %}
+                                        <option value="{{ h }}" {{ 'selected' if h == 3 }}>{{ h }}:00</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (frequency === 'weekly') {
+                timeOptionsHTML = `
+                    <div class="weekly-options">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="day_of_week" class="form-label">اليوم</label>
+                                <select class="form-select" id="day_of_week" name="day_of_week">
+                                    <option value="mon">الإثنين</option>
+                                    <option value="tue">الثلاثاء</option>
+                                    <option value="wed">الأربعاء</option>
+                                    <option value="thu">الخميس</option>
+                                    <option value="fri">الجمعة</option>
+                                    <option value="sat">السبت</option>
+                                    <option value="sun">الأحد</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="hour" class="form-label">الساعة</label>
+                                <select class="form-select" id="hour" name="hour">
+                                    {% for h in range(0, 24) %}
+                                        <option value="{{ h }}" {{ 'selected' if h == 3 }}>{{ h }}:00</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (frequency === 'monthly') {
+                timeOptionsHTML = `
+                    <div class="monthly-options">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="day" class="form-label">اليوم من الشهر</label>
+                                <select class="form-select" id="day" name="day">
+                                    {% for d in range(1, 29) %}
+                                        <option value="{{ d }}" {{ 'selected' if d == 1 }}>{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="hour" class="form-label">الساعة</label>
+                                <select class="form-select" id="hour" name="hour">
+                                    {% for h in range(0, 24) %}
+                                        <option value="{{ h }}" {{ 'selected' if h == 3 }}>{{ h }}:00</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            timeOptionsDiv.innerHTML = timeOptionsHTML;
+        });
+        
+        // إعداد مودال حذف المهمة
+        const deleteTaskModal = document.getElementById('deleteTaskModal');
+        if (deleteTaskModal) {
+            deleteTaskModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const taskId = button.getAttribute('data-task-id');
+                const taskUrl = button.getAttribute('data-task-url');
+                
+                document.getElementById('deleteTaskId').value = taskId;
+                document.getElementById('deleteTaskUrl').textContent = taskUrl;
+            });
+        }
+        
+        // رسم البياني لمقارنة الأداء
+        const performanceChart = document.getElementById('performanceChart');
+        if (performanceChart) {
+            {% if chart_data %}
+                const ctx = performanceChart.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ chart_data.labels|tojson }},
+                        datasets: [
+                            {
+                                label: 'متوسط النتيجة',
+                                data: {{ chart_data.scores|tojson }},
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'عدد المشاكل',
+                                data: {{ chart_data.issues|tojson }},
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'النتيجة'
+                                },
+                                min: 0,
+                                max: 100
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'المشاكل'
+                                },
+                                min: 0,
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                });
+            {% endif %}
+        }
+    });
+</script>
+{% endblock %}

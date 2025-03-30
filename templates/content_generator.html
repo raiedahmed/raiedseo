@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}RSEO - مولد المحتوى بالذكاء الاصطناعي{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>مولد المحتوى بالذكاء الاصطناعي</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        استخدم الذكاء الاصطناعي لإنشاء محتوى عالي الجودة لتحسين السيو (SEO) لموقعك.
+                    </div>
+
+                    <ul class="nav nav-tabs mb-4" id="contentTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="true">إنشاء محتوى جديد</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="improve-tab" data-bs-toggle="tab" data-bs-target="#improve" type="button" role="tab" aria-controls="improve" aria-selected="false">تحسين محتوى موجود</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="meta-tab" data-bs-toggle="tab" data-bs-target="#meta" type="button" role="tab" aria-controls="meta" aria-selected="false">توليد وسوم وصفية</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="contentTabContent">
+                        <!-- توليد محتوى جديد -->
+                        <div class="tab-pane fade show active" id="generate" role="tabpanel" aria-labelledby="generate-tab">
+                            <form id="generateContentForm" action="{{ url_for('generate_content') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="prompt" class="form-label">موضوع المحتوى <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="prompt" name="prompt" placeholder="مثال: فوائد تحسين محركات البحث للأعمال الصغيرة" required>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="contentType" class="form-label">نوع المحتوى</label>
+                                        <select class="form-select" id="contentType" name="content_type">
+                                            <option value="article" selected>مقال</option>
+                                            <option value="blog_post">تدوينة</option>
+                                            <option value="product_description">وصف منتج</option>
+                                            <option value="meta_description">وصف تعريفي</option>
+                                            <option value="landing_page">صفحة هبوط</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="language" class="form-label">لغة المحتوى</label>
+                                        <select class="form-select" id="language" name="language">
+                                            <option value="ar" selected>العربية</option>
+                                            <option value="en">الإنجليزية</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="tone" class="form-label">نبرة المحتوى</label>
+                                        <select class="form-select" id="tone" name="tone">
+                                            <option value="professional" selected>مهنية</option>
+                                            <option value="conversational">ودية</option>
+                                            <option value="formal">رسمية</option>
+                                            <option value="persuasive">إقناعية</option>
+                                            <option value="educational">تعليمية</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="wordCount" class="form-label">عدد الكلمات (تقريبي)</label>
+                                        <input type="number" class="form-control" id="wordCount" name="word_count" placeholder="اترك فارغًا للاستخدام الافتراضي">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="keywords" class="form-label">الكلمات المفتاحية (افصل بينها بفواصل)</label>
+                                    <input type="text" class="form-control" id="keywords" name="keywords" placeholder="مثال: تحسين، سيو، محركات البحث، تسويق">
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-magic me-2"></i>توليد المحتوى
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="fas fa-undo me-2"></i>إعادة تعيين
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- تحسين محتوى موجود -->
+                        <div class="tab-pane fade" id="improve" role="tabpanel" aria-labelledby="improve-tab">
+                            <form id="improveContentForm" action="{{ url_for('improve_content') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="originalContent" class="form-label">المحتوى الأصلي <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="originalContent" name="original_content" rows="10" placeholder="انسخ المحتوى الذي تريد تحسينه هنا..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="improveSuggestions" class="form-label">اقتراحات للتحسين (اختياري)</label>
+                                    <textarea class="form-control" id="improveSuggestions" name="suggestions" rows="3" placeholder="أخبرنا بأي اقتراحات محددة لتحسين المحتوى..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="improveKeywords" class="form-label">الكلمات المفتاحية المستهدفة (افصل بينها بفواصل)</label>
+                                    <input type="text" class="form-control" id="improveKeywords" name="keywords" placeholder="مثال: تحسين، سيو، محركات البحث، تسويق">
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-edit me-2"></i>تحسين المحتوى
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="fas fa-undo me-2"></i>إعادة تعيين
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- توليد وسوم وصفية -->
+                        <div class="tab-pane fade" id="meta" role="tabpanel" aria-labelledby="meta-tab">
+                            <form id="metaTagsForm" action="{{ url_for('generate_meta_tags') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="pageContent" class="form-label">محتوى الصفحة <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="pageContent" name="page_content" rows="10" placeholder="انسخ محتوى الصفحة هنا..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="pageUrl" class="form-label">رابط الصفحة (اختياري)</label>
+                                    <input type="url" class="form-control" id="pageUrl" name="url" placeholder="https://example.com/page">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="targetKeywords" class="form-label">الكلمات المفتاحية المستهدفة (افصل بينها بفواصل)</label>
+                                    <input type="text" class="form-control" id="targetKeywords" name="target_keywords" placeholder="مثال: تحسين، سيو، محركات البحث، تسويق">
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-tags me-2"></i>توليد العلامات الوصفية
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="fas fa-undo me-2"></i>إعادة تعيين
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- نتائج التوليد -->
+            <div class="card shadow mt-4 {% if not result %}d-none{% endif %}" id="resultCard">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>المحتوى المولد</h5>
+                    <div>
+                        <button class="btn btn-sm btn-light copy-btn" data-target="resultContent">
+                            <i class="fas fa-copy"></i> نسخ
+                        </button>
+                        <button class="btn btn-sm btn-light" onclick="downloadContent()">
+                            <i class="fas fa-download"></i> تنزيل
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if result %}
+                        <div id="resultContent" class="content-result">
+                            {% if result.title %}
+                                <h3>العنوان: {{ result.title }}</h3>
+                                <h4>الوصف: {{ result.description }}</h4>
+                                <hr>
+                            {% endif %}
+                            
+                            {% if result.content %}
+                                {{ result.content | safe }}
+                            {% endif %}
+                            
+                            {% if result.suggestions %}
+                                <h3>الاقتراحات للتحسين:</h3>
+                                <ul class="mt-3">
+                                    {% for suggestion in result.suggestions %}
+                                        <li>{{ suggestion }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% if result.score %}
+                                    <div class="alert alert-info mt-3">
+                                        <strong>تقييم المحتوى:</strong> {{ result.score }}/100
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            ستظهر نتائج التوليد هنا بعد الإرسال.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تغيير حقول النموذج بناءً على نوع المحتوى
+        document.getElementById('contentType').addEventListener('change', function() {
+            const wordCountField = document.getElementById('wordCount');
+            // تعيين قيم افتراضية مختلفة حسب نوع المحتوى
+            switch(this.value) {
+                case 'article':
+                    wordCountField.placeholder = "افتراضي: 1000 كلمة";
+                    break;
+                case 'blog_post':
+                    wordCountField.placeholder = "افتراضي: 650 كلمة";
+                    break;
+                case 'product_description':
+                    wordCountField.placeholder = "افتراضي: 200 كلمة";
+                    break;
+                case 'meta_description':
+                    wordCountField.placeholder = "افتراضي: 35 كلمة";
+                    break;
+                case 'landing_page':
+                    wordCountField.placeholder = "افتراضي: 350 كلمة";
+                    break;
+                default:
+                    wordCountField.placeholder = "اترك فارغًا للاستخدام الافتراضي";
+            }
+        });
+        
+        // نسخ المحتوى
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                // إنشاء نطاق مؤقت
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = targetElement.innerText;
+                document.body.appendChild(tempTextarea);
+                
+                // تحديد واستنساخ النص
+                tempTextarea.select();
+                document.execCommand('copy');
+                
+                // إزالة العنصر المؤقت
+                document.body.removeChild(tempTextarea);
+                
+                // تغيير نص الزر مؤقتًا
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    });
+    
+    // تنزيل المحتوى
+    function downloadContent() {
+        const content = document.getElementById('resultContent').innerText;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'generated-content.txt';
+        document.body.appendChild(a);
+        a.click();
+        
+        // تنظيف
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+    
+    // عرض بطاقة النتائج بعد التقديم
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            // سيتم التعامل مع إرسال النموذج عن طريق Flask
+            // لكن يمكن إضافة شريط تقدم هنا إذا لزم الأمر
+            document.getElementById('resultCard').classList.add('d-none');
+            // يمكن إضافة عنصر تحميل إذا كان المحتوى سيستغرق وقتًا
+        });
+    });
+</script>
+{% endblock %}

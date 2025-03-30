@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="200" rx="10" fill="#EBF2FC" />
+  
+  <!-- Magnifying Glass -->
+  <circle cx="100" cy="90" r="40" fill="#FFFFFF" stroke="#007BFF" stroke-width="6" />
+  <path d="M130 120L160 150" stroke="#007BFF" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- SEO Elements -->
+  <rect x="180" y="60" width="80" height="15" rx="5" fill="#007BFF" />
+  <rect x="180" y="85" width="60" height="8" rx="4" fill="#6CAFFF" />
+  <rect x="180" y="100" width="70" height="8" rx="4" fill="#6CAFFF" />
+  <rect x="180" y="115" width="50" height="8" rx="4" fill="#6CAFFF" />
+  
+  <!-- Chart Element -->
+  <rect x="60" y="150" width="15" height="20" rx="2" fill="#6CAFFF" />
+  <rect x="85" y="140" width="15" height="30" rx="2" fill="#007BFF" />
+  <rect x="110" y="130" width="15" height="40" rx="2" fill="#3395FF" />
+  <rect x="135" y="120" width="15" height="50" rx="2" fill="#006ADC" />
+</svg>

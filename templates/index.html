@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block page_title %}الرئيسية - لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="welcome-card">
+                <div class="row">
+                    <div class="col-md-7">
+                        <h2>مرحباً بك في RSEO</h2>
+                        <p>أداة شاملة لتحليل وتحسين السيو لمواقع الويب</p>
+                        <div class="mt-4">
+                            <a href="{{ url_for('analyze') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i> ابدأ تحليل جديد
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-5 d-none d-md-flex justify-content-center align-items-center">
+                        <img src="{{ url_for('static', filename='img/seo-illustration.svg') }}" alt="SEO Illustration" class="welcome-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ recent_results|length }}</h3>
+                        <p>تحليلات تم إجراؤها</p>
+                    </div>
+                </div>
+                {% if recent_results %}
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ recent_results[0].issues_count }}</h3>
+                        <p>مشاكل في آخر تحليل</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ recent_results[0].score }}/100</h3>
+                        <p>نتيجة آخر تحليل</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">آخر التحليلات</h5>
+                    <a href="{{ url_for('analyze') }}" class="btn btn-sm btn-outline-primary">تحليل جديد</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_results %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الموقع</th>
+                                    <th>التاريخ</th>
+                                    <th>الصفحات</th>
+                                    <th>المشاكل</th>
+                                    <th>النتيجة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in recent_results %}
+                                <tr>
+                                    <td>{{ result.url }}</td>
+                                    <td>{{ result.datetime }}</td>
+                                    <td>{{ result.pages_count }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if result.issues_count > 10 else 'warning' if result.issues_count > 5 else 'success' }}">
+                                            {{ result.issues_count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ 'danger' if result.score < 60 else 'warning' if result.score < 80 else 'success' }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ result.score }}%;" 
+                                                 aria-valuenow="{{ result.score }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ result.score }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_result', result_id=result.dir_name) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('fix') }}?report_id={{ result.dir_name }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-wrench"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                        <p class="mb-4">لم يتم إجراء أي تحليلات بعد</p>
+                        <a href="{{ url_for('analyze') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i> ابدأ تحليل جديد
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">دليل سريع</h5>
+                </div>
+                <div class="card-body">
+                    <div class="quick-guide">
+                        <div class="guide-item">
+                            <div class="guide-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="guide-content">
+                                <h6>تحليل السيو</h6>
+                                <p>تحليل شامل لموقع الويب واكتشاف مشاكل السيو</p>
+                            </div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">
+                                <i class="fas fa-wrench"></i>
+                            </div>
+                            <div class="guide-content">
+                                <h6>إصلاح المشاكل</h6>
+                                <p>إصلاح مشاكل السيو تلقائياً بناءً على التحليل</p>
+                            </div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <div class="guide-content">
+                                <h6>خريطة الموقع</h6>
+                                <p>إنشاء ملف خريطة موقع XML للموقع</p>
+                            </div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="guide-content">
+                                <h6>الإعدادات</h6>
+                                <p>تخصيص إعدادات التحليل والإصلاح</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // يمكن إضافة أي سكربتات خاصة بالصفحة الرئيسية هنا
+</script>
+{% endblock %}

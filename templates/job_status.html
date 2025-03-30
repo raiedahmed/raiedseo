@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block page_title %}حالة المهمة - {{ job.type }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    {% if job.type == 'analyze' %}
+                    <i class="fas fa-search me-2"></i> تحليل موقع: {{ job.url }}
+                    {% elif job.type == 'sitemap' %}
+                    <i class="fas fa-sitemap me-2"></i> إنشاء خريطة موقع: {{ job.url }}
+                    {% else %}
+                    <i class="fas fa-tasks me-2"></i> مهمة: {{ job.type }}
+                    {% endif %}
+                </h5>
+                <span class="badge bg-{{ 'success' if job.status == 'completed' else 'danger' if job.status == 'error' else 'primary' }}">
+                    {{ 'مكتمل' if job.status == 'completed' else 'خطأ' if job.status == 'error' else 'قيد التنفيذ' }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="job-status-wrapper">
+                    <!-- Progress Bar -->
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-{{ 'success' if job.status == 'completed' else 'danger' if job.status == 'error' else 'primary' }}" 
+                             role="progressbar" 
+                             aria-valuenow="{{ job.progress }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100" 
+                             style="width: {{ job.progress }}%">
+                            {{ job.progress }}%
+                        </div>
+                    </div>
+                    
+                    <!-- Status Message -->
+                    <div class="alert alert-{{ 'success' if job.status == 'completed' else 'danger' if job.status == 'error' else 'info' }} mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-{{ 'check-circle' if job.status == 'completed' else 'exclamation-circle' if job.status == 'error' else 'info-circle' }} fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="alert-heading mb-1">{{ 'تم الانتهاء بنجاح' if job.status == 'completed' else 'حدث خطأ' if job.status == 'error' else 'قيد التنفيذ' }}</h6>
+                                <p id="statusMessage" class="mb-0">{{ job.message }}</p>
+                                <p id="elapsedTime" class="mb-0 mt-1"><small id="timeValue">جاري الحساب...</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Section - Only shown when job is completed -->
+                    {% if job.status == 'completed' and job.result %}
+                    <div class="result-section mb-4">
+                        <h5 class="mb-3">ملخص النتائج</h5>
+                        <div class="row">
+                            {% if job.type == 'analyze' %}
+                                <div class="col-md-3 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div class="result-value">{{ job.result.total_pages }}</div>
+                                        <div class="result-label">صفحات تم تحليلها</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="result-value">{{ job.result.total_issues }}</div>
+                                        <div class="result-label">مشاكل تم اكتشافها</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <div class="result-value">{{ job.result.average_score }}/100</div>
+                                        <div class="result-label">متوسط النتيجة</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="result-value">{{ job.result.elapsed_time }}</div>
+                                        <div class="result-label">وقت التحليل</div>
+                                    </div>
+                                </div>
+                            {% elif job.type == 'sitemap' %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-link"></i>
+                                        </div>
+                                        <div class="result-value">{{ job.result.url_count }}</div>
+                                        <div class="result-label">الروابط في خريطة الموقع</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-file-code"></i>
+                                        </div>
+                                        <div class="result-value">{{ (job.result.file_size / 1024)|round(1) }} KB</div>
+                                        <div class="result-label">حجم الملف</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="result-card">
+                                        <div class="result-icon">
+                                            <i class="fas fa-file-download"></i>
+                                        </div>
+                                        <div class="result-value">
+                                            <a href="{{ url_for('download_file', result_id=job.result.dir_name, filename='sitemap.xml') }}" class="btn btn-sm btn-outline-primary">
+                                                تنزيل
+                                            </a>
+                                        </div>
+                                        <div class="result-label">ملف خريطة الموقع</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        {% if job.type == 'analyze' %}
+                            <a href="{{ url_for('view_result', result_id=job.result.dir_name) }}" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-2"></i> عرض التقرير المفصل
+                            </a>
+                            <a href="{{ url_for('fix') }}?report_id={{ job.result.dir_name }}" class="btn btn-warning">
+                                <i class="fas fa-wrench me-2"></i> إصلاح المشاكل
+                            </a>
+                        {% elif job.type == 'sitemap' %}
+                            <a href="{{ url_for('download_file', result_id=job.result.dir_name, filename='sitemap.xml') }}" class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i> تنزيل خريطة الموقع
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Navigation buttons -->
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i> العودة للرئيسية
+                        </a>
+                        
+                        {% if job.type == 'analyze' %}
+                        <a href="{{ url_for('analyze') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i> تحليل موقع آخر
+                        </a>
+                        {% elif job.type == 'sitemap' %}
+                        <a href="{{ url_for('sitemap') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sitemap me-2"></i> إنشاء خريطة موقع أخرى
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if job.status != 'completed' and job.status != 'error' %}
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">معلومات المهمة</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th style="width: 200px;">الموقع</th>
+                                <td><a href="{{ job.url }}" target="_blank">{{ job.url }}</a></td>
+                            </tr>
+                            <tr>
+                                <th>نوع المهمة</th>
+                                <td>
+                                    {% if job.type == 'analyze' %}
+                                    تحليل السيو
+                                    {% elif job.type == 'sitemap' %}
+                                    إنشاء خريطة موقع
+                                    {% else %}
+                                    {{ job.type }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>معرف المهمة</th>
+                                <td><code>{{ job_id }}</code></td>
+                            </tr>
+                            <tr>
+                                <th>الخيارات</th>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                    {% for key, value in job.options.items() %}
+                                        <li><strong>{{ key }}</strong>: {{ value }}</li>
+                                    {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    سيتم تحديث الصفحة تلقائياً كل 5 ثوانٍ. لا تحتاج إلى تحديث الصفحة يدوياً.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // تحديث حالة المهمة تلقائياً
+    {% if job.status != 'completed' and job.status != 'error' %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBar = document.getElementById('progressBar');
+        const statusMessage = document.getElementById('statusMessage');
+        const elapsedTimeElement = document.getElementById('timeValue');
+        let jobStartTime = {{ job.start_time * 1000 }};
+        
+        function updateJobStatus() {
+            fetch('{{ url_for("job_status_api", job_id=job_id) }}')
+                .then(response => response.json())
+                .then(data => {
+                    // تحديث شريط التقدم
+                    progressBar.style.width = data.progress + '%';
+                    progressBar.setAttribute('aria-valuenow', data.progress);
+                    progressBar.textContent = data.progress + '%';
+                    
+                    // تحديث الرسالة
+                    statusMessage.textContent = data.message;
+                    
+                    // تحديث الوقت المنقضي
+                    elapsedTimeElement.textContent = data.elapsed_time;
+                    
+                    // تغيير لون شريط التقدم حسب الحالة
+                    if (data.status === 'completed') {
+                        progressBar.classList.remove('bg-primary', 'progress-bar-animated');
+                        progressBar.classList.add('bg-success');
+                        location.reload(); // تحديث الصفحة لعرض النتائج
+                    } else if (data.status === 'error') {
+                        progressBar.classList.remove('bg-primary', 'progress-bar-animated');
+                        progressBar.classList.add('bg-danger');
+                        location.reload(); // تحديث الصفحة لعرض الخطأ
+                    }
+                    
+                    // استمرار التحديث إذا لم تكتمل المهمة بعد
+                    if (data.status !== 'completed' && data.status !== 'error') {
+                        setTimeout(updateJobStatus, 5000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating job status:', error);
+                    setTimeout(updateJobStatus, 10000); // محاولة مرة أخرى بعد 10 ثوانٍ في حالة الخطأ
+                });
+        }
+        
+        // تشغيل التحديث التلقائي
+        updateJobStatus();
+        
+        // تحديث الوقت المنقضي كل ثانية
+        function updateElapsedTime() {
+            const now = new Date().getTime();
+            const elapsed = now - jobStartTime;
+            
+            const seconds = Math.floor((elapsed / 1000) % 60);
+            const minutes = Math.floor((elapsed / (1000 * 60)) % 60);
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+            
+            let timeString = '';
+            if (hours > 0) {
+                timeString += hours + ' ساعة ';
+            }
+            if (minutes > 0 || hours > 0) {
+                timeString += minutes + ' دقيقة ';
+            }
+            timeString += seconds + ' ثانية';
+            
+            elapsedTimeElement.textContent = 'الوقت المنقضي: ' + timeString;
+            
+            setTimeout(updateElapsedTime, 1000);
+        }
+        
+        updateElapsedTime();
+    });
+    {% endif %}
+</script>
+{% endblock %}
