@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+
+{% block title %}تحليل تصنيف الفيديو{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> تحليل تصنيف الفيديو</h1>
+    <p class="section-description">معرفة تصنيف فيديوهاتك للكلمات المفتاحية في نتائج بحث اليوتيوب</p>
+</div>
+
+<div class="video-ranking-form">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-line"></i> تحليل تصنيف الفيديو</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">أدخل رابط الفيديو والكلمات المفتاحية التي تريد تحليل تصنيفه لها في نتائج بحث اليوتيوب.</p>
+                
+            <form action="{{ url_for('video_ranking') }}" method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            <label for="video_url"><i class="fas fa-link"></i> رابط الفيديو *</label>
+                            <input type="text" class="form-control" id="video_url" name="video_url" placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxxx" required>
+                            <div class="invalid-feedback">الرجاء إدخال رابط صحيح للفيديو</div>
+                            <small class="form-text text-muted">أدخل الرابط الكامل للفيديو الذي تريد تحليل تصنيفه</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            <label for="keywords"><i class="fas fa-key"></i> الكلمات المفتاحية *</label>
+                            <textarea class="form-control" id="keywords" name="keywords" rows="4" placeholder="أدخل كل كلمة مفتاحية في سطر جديد" required></textarea>
+                            <div class="invalid-feedback">الرجاء إدخال الكلمات المفتاحية للتحليل</div>
+                            <small class="form-text text-muted">أدخل الكلمات المفتاحية التي تريد تحليل تصنيف الفيديو لها (كلمة واحدة في كل سطر)</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            <label for="use_api" class="d-block" style="margin-bottom: 10px;"><i class="fas fa-key"></i> استخدام API اليوتيوب</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="use_api" name="use_api">
+                                <label class="custom-control-label" for="use_api">تمكين API اليوتيوب</label>
+                            </div>
+                            <small class="form-text text-muted">تمكين هذا الخيار يتطلب مفتاح API صالح في ملف .env</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 text-center mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg submit-btn">
+                            <i class="fas fa-chart-line"></i> تحليل تصنيف الفيديو
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2><i class="fas fa-lightbulb"></i> كيف تستفيد من تحليل تصنيف الفيديو؟</h2>
+        </div>
+        <div class="card-body">
+            <div class="features-container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>معرفة ظهور فيديوهاتك</h4>
+                                <p>اكتشف ترتيب فيديوهاتك للكلمات المفتاحية المختلفة ومدى ظهورها في نتائج البحث.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تتبع تغيرات التصنيف</h4>
+                                <p>راقب التغييرات في تصنيف فيديوهاتك مع مرور الوقت ومعرفة تأثير تحسيناتك.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تحديد المنافسين الرئيسيين</h4>
+                                <p>تعرف على الفيديوهات المنافسة التي تتصدر نتائج البحث للكلمات المفتاحية المستهدفة.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تحسين محتوى الفيديو</h4>
+                                <p>الحصول على توصيات لتحسين عنوان ووصف الفيديو لتحسين تصنيفه للكلمات المفتاحية المستهدفة.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> <strong>نصيحة:</strong> قم بإجراء التحليل بشكل دوري للكلمات المفتاحية المهمة لمعرفة تطور تصنيف فيديوهاتك ومدى فعالية استراتيجية السيو.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .features-container {
+        margin-top: 10px;
+    }
+    
+    .feature-item {
+        display: flex;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .feature-icon {
+        font-size: 24px;
+        color: #3498db;
+        margin-right: 15px;
+        padding-top: 5px;
+    }
+    
+    .feature-content h4 {
+        margin: 0 0 10px 0;
+        color: #343a40;
+    }
+    
+    .feature-content p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .custom-control.custom-switch {
+        padding-left: 3.25rem;
+    }
+</style>
+
+<script>
+    // التحقق من صحة النموذج
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

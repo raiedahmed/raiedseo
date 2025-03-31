@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحليل الكلمات المفتاحية لليوتيوب{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> نتائج تحليل الكلمات المفتاحية</h1>
+    <p class="section-description">تحليل الكلمات المفتاحية لموضوع: {{ results.topic }}</p>
+</div>
+
+<div class="keyword-results">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar"></i> ملخص نتائج التحليل</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>معلومات التحليل:</h3>
+                            <ul class="analysis-info">
+                                <li><strong>الموضوع:</strong> {{ results.topic }}</li>
+                                <li><strong>اللغة:</strong> {{ "العربية" if results.language == "ar" else "الإنجليزية" }}</li>
+                                <li><strong>عدد الكلمات المفتاحية:</strong> {{ results.keywords|length }}</li>
+                                <li><strong>مواضيع ذات صلة:</strong> {{ results.related_topics|join(', ') }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="youtube-icon">
+                                <i class="fab fa-youtube fa-5x text-danger"></i>
+                            </div>
+                            <p class="mt-2">استخدم هذه الكلمات المفتاحية لتحسين ظهور فيديوهاتك في يوتيوب</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> الكلمات المفتاحية المقترحة</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الكلمة المفتاحية</th>
+                                    <th>عدد البحث الشهري</th>
+                                    <th>التنافسية</th>
+                                    <th>متوسط CPC</th>
+                                    <th>الاتجاه</th>
+                                    <th>درجة الفرصة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for keyword in results.keywords %}
+                                <tr>
+                                    <td><strong>{{ keyword.keyword }}</strong></td>
+                                    <td>{{ keyword.search_volume }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar {% if keyword.competition < 0.3 %}bg-success{% elif keyword.competition < 0.7 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ keyword.competition * 100 }}%;"
+                                                aria-valuenow="{{ keyword.competition * 100 }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ (keyword.competition * 100)|round|int }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${{ keyword.cpc }}</td>
+                                    <td>
+                                        {% if keyword.trend == "up" %}
+                                        <span class="badge bg-success"><i class="fas fa-arrow-up"></i> صاعد</span>
+                                        {% elif keyword.trend == "down" %}
+                                        <span class="badge bg-danger"><i class="fas fa-arrow-down"></i> هابط</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-equals"></i> مستقر</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ 'bg-success' if keyword.score > 7 else ('bg-warning' if keyword.score > 4 else 'bg-secondary') }}">
+                                            {{ keyword.score }}/10
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> كيفية استخدام الكلمات المفتاحية</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3>نصائح لاستخدام الكلمات المفتاحية في اليوتيوب:</h3>
+                            <ul class="keywords-tips">
+                                <li>استخدم الكلمة المفتاحية الرئيسية في بداية عنوان الفيديو</li>
+                                <li>أضف الكلمات المفتاحية في وصف الفيديو بشكل طبيعي</li>
+                                <li>استخدم الكلمات المفتاحية كوسوم (tags) للفيديو</li>
+                                <li>اذكر الكلمات المفتاحية بصوت واضح خلال الفيديو</li>
+                                <li>استخدم الكلمات المفتاحية ذات درجة الفرصة العالية</li>
+                                <li>اجمع بين الكلمات المفتاحية ذات حجم البحث العالي والمنخفض</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h3>أفكار لمحتوى فيديوهات حول الموضوع:</h3>
+                            <ul class="content-ideas">
+                                <li>دليل شامل عن {{ results.topic }}</li>
+                                <li>أفضل {{ "5" }} نصائح لـ {{ results.topic }}</li>
+                                <li>الأخطاء الشائعة في {{ results.topic }}</li>
+                                <li>مقارنة بين {{ "طرق مختلفة" }} في {{ results.topic }}</li>
+                                <li>تجربتي الشخصية مع {{ results.topic }}</li>
+                                <li>كيف حققت نتائج متميزة في {{ results.topic }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{{ url_for('video_content') }}" class="action-button">
+                    <i class="fas fa-edit"></i>
+                    <span>تحسين عنوان ووصف الفيديو</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('video_ranking') }}" class="action-button">
+                    <i class="fas fa-chart-line"></i>
+                    <span>تتبع تصنيف الفيديو</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_seo') }}" class="action-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>العودة إلى أدوات سيو اليوتيوب</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,94 +1,132 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-RSEO - لوحة تحكم لإدارة تطبيق تحليل وتحسين السيو
-واجهة مستخدم قائمة على Flask
-"""
 
+# استيراد الوحدات المطلوبة من مكتبات بايثون
 import os
-import json
+import sys
 import time
+import json
 import yaml
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
-from dotenv import load_dotenv
+import logging
+import requests
+import datetime
+import hashlib
+import threading
 from threading import Thread
+import uuid
 
-# استيراد الوحدات الداخلية
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask_mail import Mail
+
 from modules.analyzer import SEOAnalyzer
 from modules.crawler import WebCrawler
-from modules.page_speed import PageSpeedAnalyzer
-from modules.content_analyzer import ContentAnalyzer
-from modules.image_optimizer import ImageOptimizer
-from modules.link_checker import LinkChecker
-from modules.seo_fixer import SEOFixer
 from modules.report_generator import ReportGenerator
-from modules.wp_integration import WordPressIntegration
+from modules.content_analyzer import ContentAnalyzer
+from modules.youtube_seo import YouTubeSEO
 from modules.ai_content_generator import AIContentGenerator
 from modules.monitoring import MonitoringSystem
+from modules.rank_tracker import RankTracker
+from modules.backlink_analyzer import BacklinkAnalyzer
 
-# استيراد الأدوات المساعدة
-from utils.helpers import validate_url, create_directory, format_time
-from utils.config_loader import ConfigLoader
-from utils.logger import setup_logger, get_logger
+from utils.helpers import validate_url, format_time, create_directory
+from utils.config_loader import get_config
 
-# تهيئة Flask
+# تهيئة السجلات
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
+# تهيئة تطبيق Flask
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'rseo-dashboard-secret-key')
+app.secret_key = os.getenv('SECRET_KEY', 'rseo-dev-secret-key')
 
-# تحميل متغيرات البيئة
-load_dotenv()
+# تهيئة خدمة البريد الإلكتروني
+mail = Mail(app)
 
-# إعداد المسجل
-logger = get_logger("rseo_webapp")
+# تحميل الإعدادات من ملف التكوين
+config = get_config().get_all()
 
-# تحميل ملف الإعدادات
-config_loader = ConfigLoader()
-config = config_loader.get_all()
+# إضافة متغير now لجميع القوالب
+@app.context_processor
+def inject_now():
+    return {'now': datetime.datetime.now()}
 
-# المتغيرات العالمية
+# مجلد لتخزين نتائج التحليل
+results_directory = os.path.join('data', 'results')
+
+# تحقق من توفر وحدات الذكاء الاصطناعي المتقدمة
+try:
+    # محاولة استيراد الوحدات المتقدمة
+    from modules.semantic_seo_analyzer import SemanticSEOAnalyzer
+    from modules.search_intent_detector import SearchIntentDetector
+    from modules.smart_cta_generator import SmartCTAGenerator
+    from modules.content_evaluator import ContentEvaluator
+    
+    # تهيئة الوحدات
+    semantic_seo_analyzer = SemanticSEOAnalyzer()
+    search_intent_detector = SearchIntentDetector()
+    smart_cta_generator = SmartCTAGenerator()
+    content_evaluator = ContentEvaluator()
+    
+    ADVANCED_AI_MODULES_AVAILABLE = True
+    logger.info("تم تحميل وحدات الذكاء الاصطناعي المتقدمة بنجاح")
+except ImportError:
+    ADVANCED_AI_MODULES_AVAILABLE = False
+    logger.warning("وحدات الذكاء الاصطناعي المتقدمة غير متوفرة")
+
+# تهيئة نظام المراقبة
+monitoring_system = MonitoringSystem()
+
+# قاموس لتخزين حالة المهام الجارية
 running_jobs = {}
-last_results = {}
-results_directory = 'results'
+
+# ==========================================
+# الوظائف المساعدة
+# ==========================================
 
 def get_recent_results(limit=5):
-    """الحصول على آخر نتائج التحليل"""
+    """الحصول على أحدث نتائج التحليل"""
+    if not os.path.exists(results_directory):
+        return []
+    
     results = []
     try:
-        if os.path.exists(results_directory):
-            dirs = [d for d in os.listdir(results_directory) if os.path.isdir(os.path.join(results_directory, d))]
-            # ترتيب الدلائل حسب التاريخ (الأحدث أولاً)
-            dirs.sort(reverse=True)
+        # قراءة المجلدات وترتيبها حسب تاريخ التعديل
+        dirs = os.listdir(results_directory)
+        dirs = [d for d in dirs if os.path.isdir(os.path.join(results_directory, d))]
+        dirs.sort(key=lambda d: os.path.getmtime(os.path.join(results_directory, d)), reverse=True)
+        
+        # اقتصار العدد حسب الحد المطلوب
+        dirs = dirs[:limit]
+        
+        for dir_name in dirs:
+            dir_path = os.path.join(results_directory, dir_name)
+            summary_file = os.path.join(dir_path, 'summary.json')
             
-            for dir_name in dirs[:limit]:
-                dir_path = os.path.join(results_directory, dir_name)
-                # البحث عن ملف النتائج
-                result_files = [f for f in os.listdir(dir_path) if f.endswith('.json')]
-                
-                if result_files:
-                    result_file = os.path.join(dir_path, result_files[0])
-                    try:
-                        with open(result_file, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            
-                            # استخراج المعلومات المهمة
-                            url = data.get('site_url', 'غير معروف')
-                            pages_count = len(data.get('pages', {}))
-                            issues_count = data.get('total_issues', 0)
-                            score = data.get('average_score', 0)
-                            
-                            results.append({
-                                'dir_name': dir_name,
-                                'url': url,
-                                'datetime': datetime.strptime(dir_name[:8] + '_' + dir_name[9:], '%Y%m%d_%H%M%S').strftime('%Y-%m-%d %H:%M'),
-                                'pages_count': pages_count,
-                                'issues_count': issues_count,
-                                'score': score
-                            })
-                    except Exception as e:
-                        logger.error(f"خطأ في قراءة ملف النتائج: {str(e)}")
+            if os.path.exists(summary_file):
+                with open(summary_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    results.append({
+                        'dir_name': dir_name,
+                        'url': data.get('url', 'غير معروف'),
+                        'datetime': data.get('datetime', 'غير معروف'),
+                        'issue_count': data.get('issue_count', 0),
+                        'score': data.get('score', 0)
+                    })
+            else:
+                # إذا لم يوجد ملف ملخص، نستخدم معلومات أساسية
+                results.append({
+                    'dir_name': dir_name,
+                    'url': 'غير معروف',
+                    'datetime': datetime.datetime.fromtimestamp(os.path.getmtime(dir_path)).strftime('%Y-%m-%d %H:%M'),
+                    'issue_count': 0,
+                    'score': 0
+                })
     except Exception as e:
-        logger.error(f"خطأ في قراءة مجلد النتائج: {str(e)}")
+        logger.error(f"خطأ في الحصول على النتائج الأخيرة: {str(e)}")
     
     return results
 
@@ -99,304 +137,54 @@ def get_result_details(result_id):
     if not os.path.exists(dir_path):
         return None
     
-    # البحث عن ملف النتائج
-    result_files = [f for f in os.listdir(dir_path) if f.endswith('.json')]
-    
-    if not result_files:
-        return None
-    
-    result_file = os.path.join(dir_path, result_files[0])
-    
     try:
-        with open(result_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        # قراءة ملف التقرير الرئيسي
+        report_file = os.path.join(dir_path, 'report.json')
+        if os.path.exists(report_file):
+            with open(report_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        else:
+            # إذا لم يوجد ملف تقرير رئيسي، نبحث عن أي ملف JSON
+            json_files = [f for f in os.listdir(dir_path) if f.endswith('.json')]
+            if json_files:
+                with open(os.path.join(dir_path, json_files[0]), 'r', encoding='utf-8') as f:
+                    return json.load(f)
     except Exception as e:
-        logger.error(f"خطأ في قراءة ملف النتائج: {str(e)}")
-        return None
+        logger.error(f"خطأ في الحصول على تفاصيل النتيجة: {str(e)}")
+    
+    return None
 
-def analyze_website_job(job_id, url, options):
-    """وظيفة تحليل موقع الويب (تعمل في خلفية)"""
-    try:
-        running_jobs[job_id]['status'] = 'running'
-        running_jobs[job_id]['progress'] = 5
-        running_jobs[job_id]['message'] = 'بدء التحليل...'
-        
-        start_time = time.time()
-        
-        # إنشاء مجلد النتائج
-        results_dir = os.path.join(options.get('output_dir', 'results'), datetime.now().strftime("%Y%m%d_%H%M%S"))
-        create_directory(results_dir)
-        
-        # تحديث الحالة
-        running_jobs[job_id]['results_dir'] = results_dir
-        running_jobs[job_id]['progress'] = 10
-        running_jobs[job_id]['message'] = 'جاري زحف الموقع...'
-        
-        # تهيئة الزاحف
-        single_page = options.get('single_page', False)
-        max_pages = 1 if single_page else config.get('crawling', {}).get('max_pages', 100)
-        depth = options.get('depth', 3)
-        delay = config.get('crawling', {}).get('delay_seconds', 1)
-        respect_robots = config.get('crawling', {}).get('respect_robots_txt', True)
-        
-        crawler = WebCrawler(
-            start_url=url,
-            max_pages=max_pages,
-            max_depth=depth,
-            delay=delay,
-            respect_robots_txt=respect_robots,
-            verbose=True
-        )
-        
-        # بدء الزحف
-        pages = crawler.crawl()
-        
-        if not pages:
-            running_jobs[job_id]['status'] = 'error'
-            running_jobs[job_id]['message'] = 'لم يتم العثور على أي صفحات للتحليل.'
-            return
-        
-        # تحديث الحالة
-        running_jobs[job_id]['progress'] = 30
-        running_jobs[job_id]['message'] = f'جاري تحليل {len(pages)} صفحة...'
-        
-        # تهيئة المحللات
-        seo_analyzer = SEOAnalyzer(config=config)
-        page_speed_analyzer = PageSpeedAnalyzer()
-        content_analyzer = ContentAnalyzer()
-        image_optimizer = ImageOptimizer()
-        link_checker = LinkChecker()
-        
-        # تحليل كل صفحة
-        results = {}
-        page_count = len(pages)
-        
-        for i, (page_url, page_data) in enumerate(pages.items()):
-            progress_percent = 30 + int(50 * ((i + 1) / page_count))
-            running_jobs[job_id]['progress'] = progress_percent
-            running_jobs[job_id]['message'] = f'تحليل صفحة {i+1} من {page_count}: {page_url}'
-            
-            page_result = {}
-            
-            try:
-                # تحليل السيو الأساسي
-                page_result['basic_seo'] = seo_analyzer.analyze_page(page_data)
-                
-                # تحليل سرعة الصفحة
-                try:
-                    page_result['page_speed'] = page_speed_analyzer.analyze(page_url)
-                except Exception as e:
-                    logger.warning(f"فشل تحليل سرعة الصفحة {page_url}: {str(e)}")
-                
-                # تحليل المحتوى
-                try:
-                    page_result['content'] = content_analyzer.analyze(page_data)
-                except Exception as e:
-                    logger.warning(f"فشل تحليل محتوى الصفحة {page_url}: {str(e)}")
-                
-                # تحليل الصور
-                try:
-                    page_result['images'] = image_optimizer.analyze_images(page_data)
-                except Exception as e:
-                    logger.warning(f"فشل تحليل صور الصفحة {page_url}: {str(e)}")
-                
-                # فحص الروابط
-                try:
-                    page_result['links'] = link_checker.check_links(page_data)
-                except Exception as e:
-                    logger.warning(f"فشل فحص روابط الصفحة {page_url}: {str(e)}")
-                
-                # إضافة النتائج
-                results[page_url] = page_result
-                
-            except Exception as e:
-                logger.error(f"خطأ أثناء تحليل الصفحة {page_url}: {str(e)}")
-        
-        # تحديث الحالة
-        running_jobs[job_id]['progress'] = 85
-        running_jobs[job_id]['message'] = 'جاري إنشاء التقرير...'
-        
-        # إنشاء التقرير
-        report_generator = ReportGenerator(results_dir=results_dir)
-        
-        export_format = options.get('export_format', 'all')
-        report_paths = report_generator.generate_report(
-            url=url,
-            results=results,
-            format=export_format
-        )
-        
-        # إصلاح المشاكل إذا طلب ذلك
-        if options.get('auto_fix', False):
-            running_jobs[job_id]['progress'] = 90
-            running_jobs[job_id]['message'] = 'جاري إصلاح مشاكل السيو...'
-            
-            seo_fixer = SEOFixer(results_dir=results_dir)
-            fixed_items = seo_fixer.fix_issues(results=results)
-            
-            # إذا كان هناك تكامل مع ووردبريس، تطبيق الإصلاحات
-            if options.get('wp_api', False):
-                wp_username = options.get('wp_username', '')
-                wp_password = options.get('wp_password', '')
-                
-                if wp_username and wp_password:
-                    running_jobs[job_id]['message'] = 'جاري تطبيق الإصلاحات على WordPress...'
-                    
-                    wp_integration = WordPressIntegration(
-                        site_url=url,
-                        username=wp_username,
-                        password=wp_password
-                    )
-                    
-                    wp_integration.apply_fixes(fixed_items)
-        
-        # حساب إحصائيات النتائج
-        total_issues = 0
-        total_score = 0
-        page_count = len(results)
-        
-        for page_url, page_data in results.items():
-            # حساب عدد المشاكل
-            issues = 0
-            for category, category_data in page_data.items():
-                if isinstance(category_data, dict) and 'issues' in category_data:
-                    issues += len(category_data['issues'])
-            total_issues += issues
-            
-            # حساب النتيجة الإجمالية
-            if 'basic_seo' in page_data and 'score' in page_data['basic_seo']:
-                total_score += page_data['basic_seo']['score']
-        
-        # متوسط النتيجة
-        average_score = round(total_score / page_count if page_count > 0 else 0, 1)
-        
-        # حفظ ملخص النتائج
-        summary = {
-            'site_url': url,
-            'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'pages': results,
-            'total_pages': page_count,
-            'total_issues': total_issues,
-            'average_score': average_score,
-            'elapsed_time': format_time(time.time() - start_time)
-        }
-        
-        # حفظ ملخص النتائج
-        with open(os.path.join(results_dir, 'summary.json'), 'w', encoding='utf-8') as f:
-            json.dump(summary, f, ensure_ascii=False, indent=2)
-        
-        # تحديث الحالة النهائية
-        running_jobs[job_id]['status'] = 'completed'
-        running_jobs[job_id]['progress'] = 100
-        running_jobs[job_id]['message'] = 'اكتمل التحليل!'
-        running_jobs[job_id]['result'] = {
-            'dir_name': os.path.basename(results_dir),
-            'total_pages': page_count,
-            'total_issues': total_issues,
-            'average_score': average_score,
-            'elapsed_time': format_time(time.time() - start_time)
-        }
-        
-        # حفظ النتائج الأخيرة
-        last_results[url] = running_jobs[job_id]['result']
-        
-    except Exception as e:
-        logger.error(f"خطأ أثناء التحليل: {str(e)}")
-        running_jobs[job_id]['status'] = 'error'
-        running_jobs[job_id]['message'] = f'حدث خطأ أثناء التحليل: {str(e)}'
-
-def generate_sitemap_job(job_id, url, options):
-    """وظيفة إنشاء خريطة الموقع (تعمل في خلفية)"""
-    try:
-        running_jobs[job_id]['status'] = 'running'
-        running_jobs[job_id]['progress'] = 10
-        running_jobs[job_id]['message'] = 'بدء إنشاء خريطة الموقع...'
-        
-        # تأكد من صحة URL
-        if not validate_url(url):
-            running_jobs[job_id]['status'] = 'error'
-            running_jobs[job_id]['message'] = f'رابط غير صالح: {url}'
-            return
-        
-        # احصل على الخيارات
-        output = options.get('output', 'sitemap.xml')
-        changefreq = options.get('changefreq', 'weekly')
-        priority = options.get('priority', 0.5)
-        
-        # تهيئة الزاحف
-        running_jobs[job_id]['progress'] = 20
-        running_jobs[job_id]['message'] = 'جاري زحف الموقع...'
-        
-        crawler = WebCrawler(
-            start_url=url,
-            max_pages=config.get('crawling', {}).get('max_pages', 100),
-            max_depth=options.get('depth', 3),
-            delay=config.get('crawling', {}).get('delay_seconds', 1),
-            respect_robots_txt=config.get('crawling', {}).get('respect_robots_txt', True),
-            verbose=True
-        )
-        
-        # بدء الزحف
-        pages = crawler.crawl()
-        
-        if not pages:
-            running_jobs[job_id]['status'] = 'error'
-            running_jobs[job_id]['message'] = 'لم يتم العثور على أي صفحات لإضافتها إلى خريطة الموقع.'
-            return
-        
-        # إنشاء مجلد النتائج
-        results_dir = os.path.join(options.get('output_dir', 'results'), datetime.now().strftime("%Y%m%d_%H%M%S"))
-        create_directory(results_dir)
-        
-        # تحديث الحالة
-        running_jobs[job_id]['progress'] = 70
-        running_jobs[job_id]['message'] = 'جاري إنشاء ملف خريطة الموقع XML...'
-        
-        # إنشاء خريطة الموقع
-        sitemap_path = os.path.join(results_dir, output)
-        
-        # إنشاء محتوى ملف XML
-        xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        
-        for page_url in pages.keys():
-            xml_content += '  <url>\n'
-            xml_content += f'    <loc>{page_url}</loc>\n'
-            xml_content += f'    <changefreq>{changefreq}</changefreq>\n'
-            xml_content += f'    <priority>{priority}</priority>\n'
-            xml_content += '  </url>\n'
-        
-        xml_content += '</urlset>'
-        
-        # حفظ الملف
-        with open(sitemap_path, 'w', encoding='utf-8') as f:
-            f.write(xml_content)
-        
-        # تحديث الحالة
-        running_jobs[job_id]['status'] = 'completed'
-        running_jobs[job_id]['progress'] = 100
-        running_jobs[job_id]['message'] = 'تم إنشاء خريطة الموقع بنجاح!'
-        running_jobs[job_id]['result'] = {
-            'file_path': sitemap_path,
-            'url_count': len(pages),
-            'file_size': os.path.getsize(sitemap_path),
-            'dir_name': os.path.basename(results_dir)
-        }
-    
-    except Exception as e:
-        logger.error(f"خطأ أثناء إنشاء خريطة الموقع: {str(e)}")
-        running_jobs[job_id]['status'] = 'error'
-        running_jobs[job_id]['message'] = f'حدث خطأ أثناء إنشاء خريطة الموقع: {str(e)}'
+# ============================
+# المسارات
+# ============================
 
 @app.route('/')
 def index():
-    """الصفحة الرئيسية للوحة التحكم"""
-    recent_results = get_recent_results()
-    return render_template('index.html', recent_results=recent_results)
+    """الصفحة الرئيسية"""
+    try:
+        # الحصول على آخر النتائج
+        recent_results = get_recent_results()
+        
+        return render_template('index.html', recent_results=recent_results)
+    except Exception as e:
+        app.logger.error(f"خطأ في عرض الصفحة الرئيسية: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
+
+@app.route('/dashboard')
+def dashboard():
+    """صفحة لوحة المعلومات"""
+    try:
+        # الحصول على آخر النتائج
+        recent_results = get_recent_results()
+        
+        return render_template('dashboard.html', recent_results=recent_results)
+    except Exception as e:
+        app.logger.error(f"خطأ في عرض لوحة المعلومات: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
 
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    """صفحة تحليل السيو"""
+    """صفحة تحليل موقع جديد"""
     if request.method == 'POST':
         url = request.form.get('url', '')
         
@@ -404,37 +192,29 @@ def analyze():
             flash('الرجاء إدخال رابط صالح', 'error')
             return redirect(url_for('analyze'))
         
-        # جمع الخيارات من النموذج
+        # إنشاء معرف فريد للمهمة
+        job_id = str(uuid.uuid4())
+        
+        # تحضير بيانات الخيارات
         options = {
             'single_page': request.form.get('single_page') == 'on',
             'depth': int(request.form.get('depth', 3)),
-            'export_format': request.form.get('export_format', 'all'),
-            'auto_fix': request.form.get('auto_fix') == 'on',
-            'output_dir': 'results',
-            'wp_api': request.form.get('wp_api') == 'on'
+            'max_pages': int(request.form.get('max_pages', 100)),
+            'check_schema': request.form.get('check_schema') == 'on',
+            'check_speed': request.form.get('check_speed') == 'on',
+            'check_core_web_vitals': request.form.get('check_core_web_vitals') == 'on',
+            'check_mobile': request.form.get('check_mobile') == 'on',
+            'export_format': request.form.get('export_format', 'html')
         }
         
-        # إضافة بيانات WordPress إذا تم تحديدها
-        if options['wp_api']:
-            options['wp_username'] = request.form.get('wp_username', '')
-            options['wp_password'] = request.form.get('wp_password', '')
-            
-            if not options['wp_username'] or not options['wp_password']:
-                flash('يجب تحديد اسم المستخدم وكلمة المرور عند استخدام WordPress API', 'error')
-                return redirect(url_for('analyze'))
-        
-        # إنشاء معرف فريد للمهمة
-        job_id = f"analyze_{int(time.time())}"
-        
-        # إنشاء بيانات المهمة
+        # إضافة المهمة إلى قائمة المهام الجارية
         running_jobs[job_id] = {
-            'type': 'analyze',
+            'status': 'pending',
             'url': url,
             'options': options,
-            'status': 'starting',
+            'start_time': time.time(),
             'progress': 0,
-            'message': 'جاري البدء...',
-            'start_time': time.time()
+            'message': 'جاري التحضير للتحليل...'
         }
         
         # بدء المهمة في خلفية
@@ -442,7 +222,7 @@ def analyze():
         thread.daemon = True
         thread.start()
         
-        # إعادة توجيه إلى صفحة الحالة
+        # إعادة توجيه إلى صفحة حالة المهمة
         return redirect(url_for('job_status', job_id=job_id))
     
     return render_template('analyze.html')
@@ -457,33 +237,26 @@ def sitemap():
             flash('الرجاء إدخال رابط صالح', 'error')
             return redirect(url_for('sitemap'))
         
-        # جمع الخيارات من النموذج
+        # إنشاء معرف فريد للمهمة
+        job_id = str(uuid.uuid4())
+        
+        # تحضير بيانات الخيارات
         options = {
-            'output': request.form.get('output', 'sitemap.xml'),
             'changefreq': request.form.get('changefreq', 'weekly'),
             'priority': float(request.form.get('priority', 0.5)),
-            'depth': int(request.form.get('depth', 3)),
-            'output_dir': 'results'
+            'save_to_server': request.form.get('save_to_server') == 'on',
+            'ping_search_engines': request.form.get('ping_search_engines') == 'on'
         }
         
-        # إنشاء معرف فريد للمهمة
-        job_id = f"sitemap_{int(time.time())}"
-        
-        # إنشاء بيانات المهمة
+        # إضافة المهمة إلى قائمة المهام الجارية
         running_jobs[job_id] = {
-            'type': 'sitemap',
+            'status': 'pending',
             'url': url,
             'options': options,
-            'status': 'starting',
+            'start_time': time.time(),
             'progress': 0,
-            'message': 'جاري البدء...',
-            'start_time': time.time()
+            'message': 'جاري التحضير لإنشاء خريطة الموقع...'
         }
-        
-        # بدء المهمة في خلفية
-        thread = Thread(target=generate_sitemap_job, args=(job_id, url, options))
-        thread.daemon = True
-        thread.start()
         
         # إعادة توجيه إلى صفحة الحالة
         return redirect(url_for('job_status', job_id=job_id))
@@ -604,450 +377,494 @@ def settings():
     
     return render_template('settings.html', config=config)
 
-@app.route('/content-generator')
-def content_generator():
-    """صفحة مولد المحتوى بالذكاء الاصطناعي"""
-    return render_template('content_generator.html', result=None)
+@app.route('/youtube_seo')
+def youtube_seo():
+    """صفحة تحسين السيو لليوتيوب"""
+    try:
+        return render_template('youtube_seo.html')
+    except Exception as e:
+        app.logger.error(f"خطأ في عرض صفحة يوتيوب سيو: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
 
-@app.route('/generate-content', methods=['POST'])
-def generate_content():
-    """توليد محتوى جديد باستخدام الذكاء الاصطناعي"""
-    # الحصول على البيانات من النموذج
-    prompt = request.form.get('prompt', '')
-    content_type = request.form.get('content_type', 'article')
-    language = request.form.get('language', 'ar')
-    tone = request.form.get('tone', 'professional')
-    word_count = request.form.get('word_count', '')
-    keywords = request.form.get('keywords', '')
+@app.route('/youtube_keywords', methods=['GET', 'POST'])
+def youtube_keywords():
+    """تحليل الكلمات المفتاحية للفيديوهات"""
+    if request.method == 'POST':
+        topic = request.form.get('topic', '')
+        language = request.form.get('language', 'ar')
+        use_api = request.form.get('use_api') == 'on'
+        
+        if not topic:
+            flash('الرجاء إدخال موضوع الفيديو', 'danger')
+            return render_template('youtube_keywords.html', error="الرجاء إدخال موضوع الفيديو")
+        
+        youtube_seo = YouTubeSEO()
+        results = youtube_seo.analyze_keywords(topic, language, use_api)
+        
+        return render_template('youtube_keywords_results.html', results=results, topic=topic, language=language)
     
-    # تحويل الكلمات المفتاحية إلى قائمة
-    keywords_list = [k.strip() for k in keywords.split(',')] if keywords else []
+    return render_template('youtube_keywords.html', error=None)
+
+@app.route('/video_ranking', methods=['GET', 'POST'])
+def video_ranking():
+    """تحليل تصنيف الفيديو في نتائج البحث"""
+    if request.method == 'POST':
+        video_url = request.form.get('video_url', '')
+        keywords = request.form.get('keywords', '')
+        use_api = request.form.get('use_api') == 'on'
+        
+        if not video_url or not keywords:
+            flash('الرجاء إدخال رابط الفيديو والكلمات المفتاحية', 'danger')
+            return render_template('youtube_ranking.html', error='الرجاء إدخال رابط الفيديو والكلمات المفتاحية')
+        
+        api_key = os.getenv('YOUTUBE_API_KEY', None) if use_api else None
+        youtube_seo = YouTubeSEO(api_key=api_key)
+        results = youtube_seo.analyze_video_ranking(video_url, keywords, use_api)
+        
+        if 'error' in results:
+            flash(results['error'], 'danger')
+            return render_template('youtube_ranking.html', error=results['error'])
+        
+        # التأكد من وجود كافة البيانات المطلوبة في النتائج
+        if 'keywords' not in results:
+            results['keywords'] = []
+            
+        if 'improvement_tips' not in results:
+            results['improvement_tips'] = []
+        
+        return render_template('youtube_ranking_results.html', 
+                              results=results, 
+                              video_url=video_url, 
+                              keywords=keywords)
     
-    # تحويل عدد الكلمات إلى رقم صحيح إذا تم تحديده
-    if word_count:
+    return render_template('youtube_ranking.html', error=None)
+
+@app.route('/youtube_competitor', methods=['GET', 'POST'])
+def youtube_competitor():
+    """تحليل منافسي اليوتيوب"""
+    if request.method == 'GET':
+        return render_template('youtube_competitor.html', error=None)
+    
+    if request.method == 'POST':
+        channel_url = request.form.get('channel_url')
+        video_count = int(request.form.get('video_count', 10))
+        api_key = request.form.get('api_key', '')
+        use_api = True if api_key else False
+        
         try:
-            word_count = int(word_count)
-        except ValueError:
-            word_count = None
-    else:
-        word_count = None
-    
-    # التحقق من صحة المدخلات
-    if not prompt:
-        flash('يرجى تحديد موضوع المحتوى', 'error')
-        return redirect(url_for('content_generator'))
-    
-    try:
-        # استخدام مفتاح API من الإعدادات
-        api_key = config.get('openai', {}).get('api_key', os.getenv('OPENAI_API_KEY'))
+            youtube_seo = YouTubeSEO(api_key=api_key)
+            results = youtube_seo.analyze_competitor(channel_url, video_count, use_api)
+            
+            # إضافة معرف القناة إذا لم يكن موجوداً في النتائج
+            if 'channel_id' not in results:
+                results['channel_id'] = youtube_seo._extract_channel_id(channel_url)
+                
+            # إضافة عدد الفيديوهات المحللة إذا لم يكن موجوداً
+            if 'videos_analyzed' not in results:
+                results['videos_analyzed'] = video_count
+                
+            return render_template('youtube_competitor_results.html', 
+                                  results=results, 
+                                  channel_url=channel_url, 
+                                  video_count=video_count)
+        except Exception as e:
+            return render_template('youtube_competitor.html', error=str(e))
+
+@app.route('/channel_analysis', methods=['GET', 'POST'])
+def channel_analysis():
+    """تحليل أداء قناة اليوتيوب"""
+    if request.method == 'POST':
+        channel_url = request.form.get('channel_url', '')
+        period = int(request.form.get('period', '30'))
+        analysis_type = request.form.get('analysis_type', 'comprehensive')
+        use_api = request.form.get('use_api') == 'on'
         
-        # تهيئة مولد المحتوى
-        content_generator = AIContentGenerator(api_key=api_key)
+        if not channel_url:
+            flash('الرجاء إدخال رابط القناة', 'danger')
+            return render_template('channel_analysis.html', error='الرجاء إدخال رابط القناة')
         
-        # توليد المحتوى
-        generated_content = content_generator.generate(
-            prompt=prompt,
-            keywords=keywords_list,
-            content_type=content_type,
-            language=language,
-            tone=tone,
-            word_count=word_count
+        api_key = os.getenv('YOUTUBE_API_KEY', None) if use_api else None
+        youtube_seo = YouTubeSEO(api_key=api_key)
+        results = youtube_seo.analyze_channel_performance(channel_url, period, use_api)
+        
+        if 'error' in results:
+            flash(results['error'], 'danger')
+            return render_template('channel_analysis.html', error=results['error'])
+        
+        return render_template('channel_analysis_results.html', 
+                              results=results, 
+                              channel_url=channel_url, 
+                              period=period,
+                              analysis_type=analysis_type)
+    
+    return render_template('channel_analysis.html', error=None)
+
+@app.route('/video_content', methods=['GET', 'POST'])
+def video_content():
+    """تحسين محتوى الفيديو"""
+    if request.method == 'POST':
+        topic = request.form.get('topic', '')
+        current_title = request.form.get('current_title', '')
+        current_description = request.form.get('current_description', '')
+        target_keywords = request.form.get('target_keywords', '')
+        
+        if not topic:
+            flash('الرجاء إدخال موضوع الفيديو', 'danger')
+            return render_template('video_content.html', error='الرجاء إدخال موضوع الفيديو')
+        
+        youtube_seo = YouTubeSEO()
+        results = youtube_seo.optimize_video_content(
+            topic=topic,
+            current_title=current_title,
+            current_description=current_description,
+            target_keywords=target_keywords
         )
         
-        # تحضير البيانات للعرض
-        result = {
-            'content': generated_content,
-            'type': content_type,
-            'language': language,
-            'tone': tone,
-            'keywords': keywords_list
-        }
+        # التأكد من وجود جميع المفاتيح المطلوبة في النتائج
+        expected_keys = ['improved_titles', 'improved_description', 'title_analysis', 'description_analysis']
+        for key in expected_keys:
+            if key not in results:
+                results[key] = None
         
-        return render_template('content_generator.html', result=result)
-    
-    except Exception as e:
-        logger.error(f"خطأ في توليد المحتوى: {str(e)}")
-        flash(f'حدث خطأ أثناء توليد المحتوى: {str(e)}', 'error')
-        return redirect(url_for('content_generator'))
-
-@app.route('/improve-content', methods=['POST'])
-def improve_content():
-    """تحسين محتوى موجود باستخدام الذكاء الاصطناعي"""
-    # الحصول على البيانات من النموذج
-    original_content = request.form.get('original_content', '')
-    suggestions_text = request.form.get('suggestions', '')
-    keywords = request.form.get('keywords', '')
-    
-    # تحويل الاقتراحات والكلمات المفتاحية إلى قوائم
-    suggestions = [s.strip() for s in suggestions_text.split('\n') if s.strip()] if suggestions_text else []
-    keywords_list = [k.strip() for k in keywords.split(',')] if keywords else []
-    
-    # التحقق من صحة المدخلات
-    if not original_content:
-        flash('يرجى تحديد المحتوى الأصلي', 'error')
-        return redirect(url_for('content_generator'))
-    
-    try:
-        # استخدام مفتاح API من الإعدادات
-        api_key = config.get('openai', {}).get('api_key', os.getenv('OPENAI_API_KEY'))
-        
-        # تهيئة مولد المحتوى
-        content_generator = AIContentGenerator(api_key=api_key)
-        
-        # تحسين المحتوى
-        improved_content = content_generator.improve_content(
-            original_content=original_content,
-            suggestions=suggestions,
-            keywords=keywords_list
+        return render_template(
+            'video_content_results.html',
+            results=results,
+            topic=topic,
+            current_title=current_title,
+            current_description=current_description,
+            target_keywords=target_keywords
         )
-        
-        # تحضير البيانات للعرض
-        result = {
-            'content': improved_content,
-            'keywords': keywords_list
-        }
-        
-        return render_template('content_generator.html', result=result)
     
-    except Exception as e:
-        logger.error(f"خطأ في تحسين المحتوى: {str(e)}")
-        flash(f'حدث خطأ أثناء تحسين المحتوى: {str(e)}', 'error')
-        return redirect(url_for('content_generator'))
-
-@app.route('/generate-meta-tags', methods=['POST'])
-def generate_meta_tags():
-    """توليد العلامات الوصفية للصفحة"""
-    # الحصول على البيانات من النموذج
-    page_content = request.form.get('page_content', '')
-    url = request.form.get('url', '')
-    target_keywords = request.form.get('target_keywords', '')
-    
-    # تحويل الكلمات المفتاحية إلى قائمة
-    keywords_list = [k.strip() for k in target_keywords.split(',')] if target_keywords else []
-    
-    # التحقق من صحة المدخلات
-    if not page_content:
-        flash('يرجى تحديد محتوى الصفحة', 'error')
-        return redirect(url_for('content_generator'))
-    
-    try:
-        # استخدام مفتاح API من الإعدادات
-        api_key = config.get('openai', {}).get('api_key', os.getenv('OPENAI_API_KEY'))
-        
-        # تهيئة مولد المحتوى
-        content_generator = AIContentGenerator(api_key=api_key)
-        
-        # توليد العلامات الوصفية
-        meta_tags = content_generator.generate_meta_tags(
-            page_content=page_content,
-            url=url,
-            target_keywords=keywords_list
-        )
-        
-        return render_template('content_generator.html', result=meta_tags)
-    
-    except Exception as e:
-        logger.error(f"خطأ في توليد العلامات الوصفية: {str(e)}")
-        flash(f'حدث خطأ أثناء توليد العلامات الوصفية: {str(e)}', 'error')
-        return redirect(url_for('content_generator'))
-
-@app.route('/suggest-improvements', methods=['POST'])
-def suggest_improvements():
-    """اقتراح تحسينات للمحتوى من منظور السيو"""
-    # الحصول على البيانات من النموذج
-    content = request.form.get('content', '')
-    content_type = request.form.get('content_type', '')
-    target_keywords = request.form.get('target_keywords', '')
-    
-    # تحويل الكلمات المفتاحية إلى قائمة
-    keywords_list = [k.strip() for k in target_keywords.split(',')] if target_keywords else []
-    
-    # التحقق من صحة المدخلات
-    if not content:
-        flash('يرجى تحديد المحتوى', 'error')
-        return redirect(url_for('content_generator'))
-    
-    try:
-        # استخدام مفتاح API من الإعدادات
-        api_key = config.get('openai', {}).get('api_key', os.getenv('OPENAI_API_KEY'))
-        
-        # تهيئة مولد المحتوى
-        content_generator = AIContentGenerator(api_key=api_key)
-        
-        # اقتراح تحسينات
-        suggestions = content_generator.suggest_improvements(
-            content=content,
-            content_type=content_type,
-            target_keywords=keywords_list
-        )
-        
-        return render_template('content_generator.html', result=suggestions)
-    
-    except Exception as e:
-        logger.error(f"خطأ في اقتراح تحسينات: {str(e)}")
-        flash(f'حدث خطأ أثناء اقتراح تحسينات: {str(e)}', 'error')
-        return redirect(url_for('content_generator'))
-
-# نظام المراقبة والتقارير الدورية
-monitoring_system = MonitoringSystem()
+    return render_template('video_content.html', error=None)
 
 @app.route('/monitoring')
 def monitoring():
-    """صفحة نظام المراقبة والتقارير الدورية"""
-    # الحصول على المهام المجدولة
-    tasks = monitoring_system.get_all_performance_data()
-    
-    # حساب الإحصائيات
-    total_reports = 0
-    total_issues = 0
-    scores_sum = 0
-    scores_count = 0
-    
-    for task in tasks:
-        if 'score' in task and task['score'] > 0:
-            scores_sum += task['score']
-            scores_count += 1
+    """صفحة المراقبة والتقارير"""
+    try:
+        app.logger.info("بدء تحميل صفحة المراقبة")
         
-        if 'issues' in task:
-            total_issues += task['issues']
+        # الحصول على بيانات المراقبة
+        app.logger.info("جاري استدعاء get_monitoring_data")
+        monitoring_data = monitoring_system.get_monitoring_data()
+        app.logger.info(f"تم الحصول على بيانات المراقبة: {monitoring_data}")
         
-        # الحصول على سجل المهمة لحساب إجمالي التقارير
-        history = monitoring_system.get_task_history(task['task_id'])
-        total_reports += len(history)
-    
-    # حساب متوسط النتيجة
-    average_score = int(scores_sum / scores_count) if scores_count > 0 else 0
-    
-    # إعداد بيانات الرسم البياني
-    chart_data = None
-    if tasks:
-        # تحديد المهام التي لديها نتائج
-        tasks_with_results = [task for task in tasks if 'score' in task and task['score'] > 0]
-        
-        if tasks_with_results:
-            # ترتيب المهام حسب النتيجة (من الأعلى للأدنى)
-            tasks_with_results.sort(key=lambda x: x['score'], reverse=True)
-            
-            # اختيار أفضل 5 مهام (أو أقل إذا كان العدد أقل من 5)
-            top_tasks = tasks_with_results[:min(5, len(tasks_with_results))]
-            
-            chart_data = {
-                'labels': [task.get('url').replace('https://', '').replace('http://', '') for task in top_tasks],
-                'scores': [task.get('score', 0) for task in top_tasks],
-                'issues': [task.get('issues', 0) for task in top_tasks]
-            }
-    
-    return render_template('monitoring.html', 
-                           tasks=tasks, 
-                           total_reports=total_reports,
-                           total_issues=total_issues,
-                           average_score=average_score,
-                           chart_data=chart_data)
-
-@app.route('/monitoring/add-task', methods=['POST'])
-def monitoring_add_task():
-    """إضافة مهمة مراقبة جديدة"""
-    # الحصول على البيانات من النموذج
-    url = request.form.get('url', '')
-    frequency = request.form.get('frequency', 'weekly')
-    notify = bool(request.form.get('notify', False))
-    max_pages = int(request.form.get('max_pages', 100))
-    depth = int(request.form.get('depth', 3))
-    
-    # الحصول على خيارات التوقيت
-    options = {
-        'max_pages': max_pages,
-        'depth': depth
-    }
-    
-    # إضافة خيارات التوقيت بناءً على التكرار
-    if frequency == 'daily':
-        options['hour'] = int(request.form.get('hour', 3))
-    elif frequency == 'weekly':
-        options['day_of_week'] = request.form.get('day_of_week', 'mon')
-        options['hour'] = int(request.form.get('hour', 3))
-    elif frequency == 'monthly':
-        options['day'] = int(request.form.get('day', 1))
-        options['hour'] = int(request.form.get('hour', 3))
-    
-    # التحقق من صحة URL
-    if not validate_url(url):
-        flash('عنوان URL غير صالح', 'error')
-        return redirect(url_for('monitoring'))
-    
-    # إضافة المهمة
-    task_id = monitoring_system.add_scheduled_task(
-        url=url,
-        frequency=frequency,
-        options=options,
-        notify=notify
-    )
-    
-    if task_id:
-        flash(f'تمت إضافة مهمة المراقبة بنجاح لـ {url}', 'success')
-    else:
-        flash('فشل في إضافة مهمة المراقبة. يرجى التحقق من السجلات.', 'error')
-    
-    return redirect(url_for('monitoring'))
-
-@app.route('/monitoring/remove-task', methods=['POST'])
-def monitoring_remove_task():
-    """إزالة مهمة مراقبة"""
-    task_id = request.form.get('task_id', '')
-    
-    if not task_id:
-        flash('معرف المهمة غير صالح', 'error')
-        return redirect(url_for('monitoring'))
-    
-    success = monitoring_system.remove_scheduled_task(task_id)
-    
-    if success:
-        flash('تمت إزالة مهمة المراقبة بنجاح', 'success')
-    else:
-        flash('فشل في إزالة مهمة المراقبة. يرجى التحقق من السجلات.', 'error')
-    
-    return redirect(url_for('monitoring'))
-
-@app.route('/monitoring/run-task/<task_id>')
-def monitoring_run_task(task_id):
-    """تشغيل مهمة مراقبة محددة الآن"""
-    success = monitoring_system.run_task_now(task_id)
-    
-    if success:
-        flash('تم بدء تنفيذ المهمة. يمكنك متابعة التقدم في صفحة تفاصيل المهمة.', 'success')
-    else:
-        flash('فشل في تشغيل المهمة. يرجى التحقق من السجلات.', 'error')
-    
-    return redirect(url_for('monitoring_task_details', task_id=task_id))
+        return render_template('monitoring.html', monitoring_data=monitoring_data)
+    except Exception as e:
+        app.logger.error(f"خطأ في عرض صفحة المراقبة: {str(e)}")
+        app.logger.exception("تفاصيل الخطأ:")
+        return f"حدث خطأ: {str(e)}", 500
 
 @app.route('/monitoring/task/<task_id>')
 def monitoring_task_details(task_id):
     """عرض تفاصيل مهمة مراقبة محددة"""
-    # البحث عن المهمة في القائمة
-    tasks = monitoring_system.get_scheduled_tasks()
-    task = next((t for t in tasks if t.get('id') == task_id), None)
-    
-    if not task:
-        flash('المهمة غير موجودة', 'error')
-        return redirect(url_for('monitoring'))
-    
-    # الحصول على سجل المهمة
-    history = monitoring_system.get_task_history(task_id)
-    
-    # ترتيب السجل حسب الوقت (الأحدث أولاً)
-    history.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    
-    # الحصول على آخر نتيجة
-    latest_result = history[0] if history else None
-    
-    # إعداد بيانات الرسم البياني للعرض
-    chart_data = None
-    if len(history) > 1:
-        comparison = monitoring_system.compare_results(task_id, limit=10)
+    try:
+        # البحث عن المهمة
+        task = None
+        for t in monitoring_system.get_scheduled_tasks():
+            if t.get('id') == task_id:
+                task = t
+                break
         
-        if comparison:
-            chart_data = {
-                'dates': comparison.get('dates', []),
-                'scores': comparison.get('scores', []),
-                'issues': comparison.get('issues', [])
-            }
-    
-    return render_template('monitoring_task_details.html',
-                           task=task,
-                           history=history,
-                           latest_result=latest_result,
-                           chart_data=chart_data)
+        if not task:
+            flash('المهمة غير موجودة', 'danger')
+            return redirect(url_for('monitoring'))
+        
+        # الحصول على سجل المهمة
+        task_history = monitoring_system.get_task_history(task_id)
+        
+        # تحضير بيانات الرسم البياني
+        chart_data = {
+            'labels': [],
+            'scores': [],
+            'issues': []
+        }
+        
+        for entry in task_history:
+            chart_data['labels'].append(entry.get('timestamp', ''))
+            result = entry.get('result', {})
+            chart_data['scores'].append(result.get('score', 0))
+            chart_data['issues'].append(len(result.get('issues', [])))
+        
+        return render_template('monitoring_task_details.html', task=task, history=task_history, chart_data=chart_data)
+    except Exception as e:
+        app.logger.error(f"خطأ في عرض تفاصيل المهمة: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('monitoring'))
 
-@app.route('/monitoring/edit-task', methods=['POST'])
-def monitoring_edit_task():
-    """تعديل مهمة مراقبة"""
-    task_id = request.form.get('task_id', '')
-    
-    if not task_id:
-        flash('معرف المهمة غير صالح', 'error')
-        return redirect(url_for('monitoring'))
-    
-    # البحث عن المهمة في القائمة
-    tasks = monitoring_system.get_scheduled_tasks()
-    task_index = next((i for i, t in enumerate(tasks) if t.get('id') == task_id), None)
-    
-    if task_index is None:
-        flash('المهمة غير موجودة', 'error')
-        return redirect(url_for('monitoring'))
-    
-    # تحديث بيانات المهمة
-    url = request.form.get('url', '')
-    frequency = request.form.get('frequency', 'weekly')
-    notify = bool(request.form.get('notify', False))
-    max_pages = int(request.form.get('max_pages', 100))
-    depth = int(request.form.get('depth', 3))
-    
-    # الحصول على خيارات التوقيت
-    options = {
-        'max_pages': max_pages,
-        'depth': depth,
-        'notify': notify
-    }
-    
-    # إضافة خيارات التوقيت بناءً على التكرار
-    if frequency == 'daily':
-        options['hour'] = int(request.form.get('hour', 3))
-    elif frequency == 'weekly':
-        options['day_of_week'] = request.form.get('day_of_week', 'mon')
-        options['hour'] = int(request.form.get('hour', 3))
-    elif frequency == 'monthly':
-        options['day'] = int(request.form.get('day', 1))
-        options['hour'] = int(request.form.get('hour', 3))
-    
-    # التحقق من صحة URL
-    if not validate_url(url):
-        flash('عنوان URL غير صالح', 'error')
+@app.route('/monitoring/run/<task_id>')
+def monitoring_run_task(task_id):
+    """تشغيل مهمة مراقبة يدوياً"""
+    try:
+        # البحث عن المهمة
+        task = None
+        for t in monitoring_system.get_scheduled_tasks():
+            if t.get('id') == task_id:
+                task = t
+                break
+        
+        if not task:
+            flash('المهمة غير موجودة', 'danger')
+            return redirect(url_for('monitoring'))
+        
+        # تشغيل المهمة
+        monitoring_system.run_task_now(task_id)
+        
+        flash(f'تم بدء تنفيذ المهمة لموقع {task.get("url")}', 'success')
         return redirect(url_for('monitoring_task_details', task_id=task_id))
-    
-    # تحديث المهمة
-    # إزالة المهمة القديمة أولاً
-    monitoring_system.remove_scheduled_task(task_id)
-    
-    # ثم إضافة المهمة المحدثة
-    new_task_id = monitoring_system.add_scheduled_task(
-        url=url,
-        frequency=frequency,
-        options=options,
-        notify=notify
-    )
-    
-    if new_task_id:
-        flash(f'تم تحديث مهمة المراقبة بنجاح', 'success')
-    else:
-        flash('فشل في تحديث مهمة المراقبة. يرجى التحقق من السجلات.', 'error')
-    
-    return redirect(url_for('monitoring_task_details', task_id=new_task_id if new_task_id else task_id))
-
-@app.route('/monitoring/compare-reports')
-def monitoring_compare_reports():
-    """مقارنة تقارير تحليل"""
-    task_id = request.args.get('task_id', '')
-    report1_id = request.args.get('report1', '')
-    report2_id = request.args.get('report2', '')
-    
-    if not all([task_id, report1_id, report2_id]):
-        flash('بيانات المقارنة غير مكتملة', 'error')
+    except Exception as e:
+        app.logger.error(f"خطأ في تشغيل المهمة: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
         return redirect(url_for('monitoring'))
-    
-    # الحصول على بيانات التقارير
-    # (هذه الوظيفة تحتاج إلى تنفيذ إضافي لاسترجاع بيانات التقارير المحددة)
-    
-    # إنشاء تقرير المقارنة
-    # (هذه الوظيفة تحتاج إلى تنفيذ إضافي لإنشاء تقرير المقارنة)
-    
-    flash('تم إنشاء تقرير المقارنة بنجاح', 'success')
-    return redirect(url_for('monitoring_task_details', task_id=task_id))
+
+@app.route('/monitoring/add', methods=['POST'])
+def monitoring_add_task():
+    """إضافة مهمة مراقبة جديدة"""
+    try:
+        url = request.form.get('url')
+        frequency = request.form.get('frequency', 'weekly')
+        
+        if not url:
+            flash('يرجى إدخال رابط الموقع', 'warning')
+            return redirect(url_for('monitoring'))
+        
+        # إضافة المهمة
+        task_id = monitoring_system.add_scheduled_task(url, frequency=frequency)
+        
+        flash(f'تمت إضافة مهمة مراقبة جديدة للموقع {url}', 'success')
+        return redirect(url_for('monitoring'))
+    except Exception as e:
+        app.logger.error(f"خطأ في إضافة مهمة مراقبة: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('monitoring'))
+
+@app.route('/monitoring/delete/<task_id>', methods=['POST'])
+def monitoring_delete_task(task_id):
+    """حذف مهمة مراقبة"""
+    try:
+        # حذف المهمة
+        result = monitoring_system.delete_scheduled_task(task_id)
+        
+        if result:
+            flash('تم حذف المهمة بنجاح', 'success')
+        else:
+            flash('فشل في حذف المهمة', 'danger')
+            
+        return redirect(url_for('monitoring'))
+    except Exception as e:
+        app.logger.error(f"خطأ في حذف المهمة: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('monitoring'))
+
+@app.route('/content_generator', methods=['GET', 'POST'])
+def content_generator():
+    """مولد المحتوى بالذكاء الاصطناعي"""
+    try:
+        if request.method == 'POST':
+            topic = request.form.get('topic', '')
+            content_type = request.form.get('content_type', 'article')
+            keywords = request.form.get('keywords', '')
+            tone = request.form.get('tone', 'informative')
+            language = request.form.get('language', 'ar')
+            
+            if not topic:
+                flash('الرجاء إدخال موضوع المحتوى', 'danger')
+                return render_template('content_generator.html', error='الرجاء إدخال موضوع المحتوى')
+            
+            ai_generator = AIContentGenerator()
+            results = ai_generator.generate_content(
+                topic=topic,
+                content_type=content_type,
+                keywords=keywords,
+                tone=tone,
+                language=language
+            )
+            
+            return render_template(
+                'content_generator.html',
+                results=results,
+                topic=topic,
+                content_type=content_type,
+                keywords=keywords,
+                tone=tone,
+                language=language
+            )
+        
+        return render_template('content_generator.html')
+    except Exception as e:
+        app.logger.error(f"خطأ في صفحة مولد المحتوى: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
+
+@app.route('/generate_content', methods=['POST'])
+def generate_content():
+    """توليد محتوى جديد"""
+    try:
+        prompt = request.form.get('prompt', '')
+        content_type = request.form.get('content_type', 'article')
+        language = request.form.get('language', 'ar')
+        tone = request.form.get('tone', 'professional')
+        word_count = request.form.get('word_count', '')
+        keywords = request.form.get('keywords', '')
+        
+        if not prompt:
+            flash('الرجاء إدخال موضوع المحتوى', 'danger')
+            return redirect(url_for('content_generator'))
+        
+        ai_generator = AIContentGenerator()
+        results = ai_generator.generate_content(
+            topic=prompt,
+            content_type=content_type,
+            keywords=keywords,
+            tone=tone,
+            language=language,
+            word_count=word_count
+        )
+        
+        return render_template(
+            'content_generator.html',
+            results=results,
+            prompt=prompt,
+            content_type=content_type,
+            keywords=keywords,
+            tone=tone,
+            language=language,
+            active_tab='generate'
+        )
+    except Exception as e:
+        app.logger.error(f"خطأ في توليد المحتوى: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('content_generator'))
+
+@app.route('/improve_content', methods=['POST'])
+def improve_content():
+    """تحسين محتوى موجود"""
+    try:
+        original_content = request.form.get('original_content', '')
+        suggestions = request.form.get('suggestions', '')
+        keywords = request.form.get('keywords', '')
+        
+        if not original_content:
+            flash('الرجاء إدخال المحتوى الأصلي', 'danger')
+            return redirect(url_for('content_generator'))
+        
+        ai_generator = AIContentGenerator()
+        results = ai_generator.improve_content(
+            content=original_content,
+            suggestions=suggestions,
+            keywords=keywords
+        )
+        
+        return render_template(
+            'content_generator.html',
+            improved_results=results,
+            original_content=original_content,
+            suggestions=suggestions,
+            keywords=keywords,
+            active_tab='improve'
+        )
+    except Exception as e:
+        app.logger.error(f"خطأ في تحسين المحتوى: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('content_generator'))
+
+@app.route('/generate_meta_tags', methods=['POST'])
+def generate_meta_tags():
+    """توليد وسوم وصفية"""
+    try:
+        page_content = request.form.get('page_content', '')
+        
+        if not page_content:
+            flash('الرجاء إدخال محتوى الصفحة', 'danger')
+            return redirect(url_for('content_generator'))
+        
+        ai_generator = AIContentGenerator()
+        results = ai_generator.generate_meta_tags(content=page_content)
+        
+        return render_template(
+            'content_generator.html',
+            meta_results=results,
+            page_content=page_content,
+            active_tab='meta'
+        )
+    except Exception as e:
+        app.logger.error(f"خطأ في توليد الوسوم الوصفية: {str(e)}")
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('content_generator'))
+
+@app.route('/rank_tracker', methods=['GET', 'POST'])
+def rank_tracker_page():
+    """صفحة متابعة الترتيب في نتائج البحث"""
+    try:
+        if request.method == 'POST':
+            domain = request.form.get('domain', '')
+            keywords = request.form.get('keywords', '')
+            
+            if not domain or not keywords:
+                flash('الرجاء إدخال النطاق والكلمات المفتاحية', 'danger')
+                return render_template('rank_tracker.html', error='الرجاء إدخال النطاق والكلمات المفتاحية')
+            
+            tracker = RankTracker()
+            results = tracker.check_rankings(domain, keywords.split(','))
+            
+            return render_template(
+                'rank_tracker.html',
+                results=results,
+                domain=domain,
+                keywords=keywords
+            )
+        
+        return render_template('rank_tracker.html')
+    except Exception as e:
+        app.logger.error(f"خطأ في صفحة متابعة الترتيب: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
+
+@app.route('/backlinks', methods=['GET', 'POST'])
+def backlinks_page():
+    """صفحة تحليل الروابط الخلفية"""
+    try:
+        if request.method == 'POST':
+            domain = request.form.get('domain', '')
+            
+            if not domain:
+                flash('الرجاء إدخال النطاق', 'danger')
+                return render_template('backlink_analyzer.html', error='الرجاء إدخال النطاق')
+            
+            backlink_analyzer = BacklinkAnalyzer()
+            results = backlink_analyzer.analyze_backlinks(domain)
+            
+            return render_template(
+                'backlink_results.html',
+                results=results,
+                domain=domain
+            )
+        
+        return render_template('backlink_analyzer.html')
+    except Exception as e:
+        app.logger.error(f"خطأ في صفحة تحليل الروابط الخلفية: {str(e)}")
+        return f"حدث خطأ: {str(e)}", 500
+
+@app.route('/keyword-analysis')
+def keyword_analysis():
+    """صفحة تحليل الكلمات المفتاحية"""
+    return render_template('keyword_analysis.html')
+
+@app.route('/video-analysis')
+def video_analysis():
+    """صفحة تحليل تصنيف الفيديو"""
+    return render_template('video_analysis.html')
+
+@app.route('/competitors')
+def competitors():
+    """صفحة تحليل المنافسين"""
+    return render_template('competitors.html')
 
 if __name__ == '__main__':
     # التأكد من وجود المجلدات الضرورية
     create_directory(results_directory)
     create_directory(os.path.join('data', 'monitoring'))
-    create_directory(os.path.join('data', 'reports'))
+    
+    # تشغيل المهام الدورية للمراقبة في خلفية
+    # monitor_thread = Thread(target=monitoring_system.run_scheduled_tasks, daemon=True)
+    # monitor_thread.start()
     
     # تشغيل التطبيق
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

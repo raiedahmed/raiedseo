@@ -1,0 +1,355 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحليل منافسي اليوتيوب{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> نتائج تحليل منافسي اليوتيوب</h1>
+    <p class="section-description">تحليل قناة المنافس: {{ results.channel_name }}</p>
+</div>
+
+<div class="competitor-results">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> معلومات القناة</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>{{ results.channel_name }}</h3>
+                            <div class="channel-stats mt-4">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.subscribers }}</h4>
+                                                <p>المشتركين</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-eye"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.total_views }}</h4>
+                                                <p>إجمالي المشاهدات</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-video"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.videos_analyzed }}</h4>
+                                                <p>الفيديوهات المحللة</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.avg_views }}</h4>
+                                                <p>متوسط المشاهدات</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-thumbs-up"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.avg_engagement }}%</h4>
+                                                <p>متوسط التفاعل</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stats-card">
+                                            <div class="stats-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="stats-content">
+                                                <h4>{{ results.publishing_frequency }}</h4>
+                                                <p>معدل النشر</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="channel-thumbnail">
+                                <span class="channel-initial">{{ results.channel_name[0] }}</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="https://www.youtube.com/channel/{{ results.channel_id }}" target="_blank" class="btn btn-danger">
+                                    <i class="fab fa-youtube"></i> زيارة القناة
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-crown"></i> أفضل الفيديوهات أداءً</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>العنوان</th>
+                                    <th>المشاهدات</th>
+                                    <th>معدل التفاعل</th>
+                                    <th>تاريخ النشر</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for video in results.top_videos %}
+                                <tr>
+                                    <td>{{ video.title }}</td>
+                                    <td>{{ video.views }}</td>
+                                    <td>{{ video.engagement_rate }}%</td>
+                                    <td>{{ video.publish_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> الكلمات المفتاحية الأكثر استخداماً</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الكلمة المفتاحية</th>
+                                    <th>عدد المرات</th>
+                                    <th>النسبة المئوية</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for keyword in results.top_keywords %}
+                                <tr>
+                                    <td>{{ keyword.keyword }}</td>
+                                    <td>{{ keyword.count }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" 
+                                                role="progressbar" 
+                                                style="width: {{ keyword.percentage }}%" 
+                                                aria-valuenow="{{ keyword.percentage }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ keyword.percentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> رؤى استراتيجية لتحسين السيو</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>استراتيجيات سيو يستخدمها المنافس:</h3>
+                            <ul class="seo-insights">
+                                {% for insight in results.seo_insights %}
+                                <li><i class="fas fa-check-circle text-success"></i> {{ insight }}</li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <h3 class="mt-4">ما يمكنك تعلمه من هذا المنافس:</h3>
+                            <ul>
+                                <li>استخدم الكلمات المفتاحية الرئيسية التي يستهدفها المنافس</li>
+                                <li>حاكِ استراتيجية النشر لديهم ({{ results.publishing_frequency }})</li>
+                                <li>ركز على المواضيع التي تحقق مشاهدات عالية</li>
+                                <li>استخدم أساليب التفاعل المشابهة لزيادة المشاركة</li>
+                                <li>قم بتحسين عناوين وأوصاف الفيديوهات باستخدام الكلمات المفتاحية الرئيسية</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="opportunity-card">
+                                <div class="opportunity-header">
+                                    <i class="fas fa-rocket"></i>
+                                    <h3>فرص النمو</h3>
+                                </div>
+                                <div class="opportunity-body">
+                                    <p>استنادًا إلى تحليل المنافس، هناك فرص للتفوق في:</p>
+                                    <ul>
+                                        <li>استهداف كلمات مفتاحية منخفضة المنافسة</li>
+                                        <li>إنشاء محتوى أكثر تفصيلاً وعمقًا</li>
+                                        <li>تحسين جودة الصور المصغرة للفيديوهات</li>
+                                        <li>استخدام عناوين أكثر جاذبية</li>
+                                        <li>التركيز على التفاعل مع المشاهدين</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_keywords') }}" class="action-button">
+                    <i class="fas fa-key"></i>
+                    <span>تحليل الكلمات المفتاحية</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('video_content') }}" class="action-button">
+                    <i class="fas fa-edit"></i>
+                    <span>تحسين عنوان ووصف الفيديو</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_seo') }}" class="action-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>العودة إلى أدوات سيو اليوتيوب</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .channel-stats {
+        margin-top: 20px;
+    }
+    
+    .stats-card {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        height: 100%;
+    }
+    
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        background-color: #3498db;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .stats-content h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .stats-content p {
+        margin: 0;
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .channel-thumbnail {
+        width: 120px;
+        height: 120px;
+        background-color: #e74c3c;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: white;
+        font-size: 48px;
+        font-weight: bold;
+    }
+    
+    .seo-insights li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .opportunity-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .opportunity-header {
+        background-color: #27ae60;
+        color: white;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .opportunity-header i {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    .opportunity-header h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+    
+    .opportunity-body {
+        padding: 15px;
+    }
+    
+    .opportunity-body ul {
+        padding-left: 20px;
+    }
+    
+    .opportunity-body li {
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}

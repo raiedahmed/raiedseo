@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}تحليل منافسي اليوتيوب{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> تحليل منافسي اليوتيوب</h1>
+    <p class="section-description">دراسة قنوات المنافسين وتحليل استراتيجياتهم في المحتوى</p>
+</div>
+
+<div class="competitor-analysis-form">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-users"></i> تحليل منافسي اليوتيوب</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">أدخل رابط قناة المنافس للحصول على تحليل شامل لاستراتيجية المحتوى والكلمات المفتاحية المستخدمة.</p>
+                
+            <form action="{{ url_for('youtube_competitor') }}" method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            <label for="channel_url"><i class="fas fa-link"></i> رابط قناة المنافس *</label>
+                            <input type="text" class="form-control" id="channel_url" name="channel_url" placeholder="https://www.youtube.com/@example" required>
+                            <div class="invalid-feedback">الرجاء إدخال رابط صحيح لقناة المنافس</div>
+                            <small class="form-text text-muted">أدخل الرابط الكامل لقناة المنافس التي تريد تحليلها</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="video_count"><i class="fas fa-play-circle"></i> عدد الفيديوهات للتحليل</label>
+                            <select class="form-control" id="video_count" name="video_count">
+                                <option value="5">5 فيديوهات</option>
+                                <option value="10" selected>10 فيديوهات</option>
+                                <option value="15">15 فيديو</option>
+                                <option value="20">20 فيديو</option>
+                            </select>
+                            <small class="form-text text-muted">حدد عدد الفيديوهات التي تريد تحليلها من قناة المنافس</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="use_api" class="d-block" style="margin-bottom: 10px;"><i class="fas fa-key"></i> استخدام API اليوتيوب</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="use_api" name="use_api">
+                                <label class="custom-control-label" for="use_api">تمكين API اليوتيوب</label>
+                            </div>
+                            <small class="form-text text-muted">تمكين هذا الخيار يتطلب مفتاح API صالح في ملف .env</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 text-center mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg submit-btn">
+                            <i class="fas fa-users"></i> تحليل المنافس
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2><i class="fas fa-lightbulb"></i> كيف تستفيد من تحليل المنافسين؟</h2>
+        </div>
+        <div class="card-body">
+            <div class="features-container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>اكتشاف الكلمات المفتاحية</h4>
+                                <p>تعرف على الكلمات المفتاحية التي يستخدمها المنافسون والتي تحقق لهم مشاهدات عالية.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تحليل المحتوى الناجح</h4>
+                                <p>تعرف على أنواع المحتوى التي تحظى بشعبية في مجالك والموضوعات التي تجذب أكبر عدد من المشاهدات.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تحديد الفجوات في المحتوى</h4>
+                                <p>اكتشف الموضوعات التي لم يتم تغطيتها بشكل كافٍ من قبل المنافسين وتمثل فرصاً لك.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>تطوير استراتيجية تنافسية</h4>
+                                <p>بناء استراتيجية محتوى قوية على اليوتيوب تعتمد على نقاط قوتك وضعف منافسيك.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i> <strong>نصيحة:</strong> قم بتحليل أكثر من منافس واحد للحصول على صورة أكثر شمولية عن المجال وفرص التمييز المتاحة.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .features-container {
+        margin-top: 10px;
+    }
+    
+    .feature-item {
+        display: flex;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .feature-icon {
+        font-size: 24px;
+        color: #3498db;
+        margin-right: 15px;
+        padding-top: 5px;
+    }
+    
+    .feature-content h4 {
+        margin: 0 0 10px 0;
+        color: #343a40;
+    }
+    
+    .feature-content p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .custom-control.custom-switch {
+        padding-left: 3.25rem;
+    }
+</style>
+
+<script>
+    // التحقق من صحة النموذج
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

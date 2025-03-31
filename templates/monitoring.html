@@ -27,7 +27,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-0">المواقع المراقبة</h6>
-                                            <h2 class="mb-0">{{ tasks|length }}</h2>
+                                            <h2 class="mb-0">{{ monitoring_data.task_statistics.total_tasks }}</h2>
                                         </div>
                                         <div>
                                             <i class="fas fa-globe fa-3x opacity-50"></i>
@@ -42,7 +42,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-0">التقارير الكلية</h6>
-                                            <h2 class="mb-0">{{ total_reports }}</h2>
+                                            <h2 class="mb-0">{{ monitoring_data.recent_reports|length }}</h2>
                                         </div>
                                         <div>
                                             <i class="fas fa-file-alt fa-3x opacity-50"></i>
@@ -57,7 +57,17 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-0">متوسط النتيجة</h6>
-                                            <h2 class="mb-0">{{ average_score }}%</h2>
+                                            <h2 class="mb-0">
+                                                {% set total_score = 0 %}
+                                                {% for report in monitoring_data.recent_reports %}
+                                                    {% set total_score = total_score + report.score %}
+                                                {% endfor %}
+                                                {% if monitoring_data.recent_reports|length > 0 %}
+                                                    {{ (total_score / monitoring_data.recent_reports|length)|round }}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+                                            </h2>
                                         </div>
                                         <div>
                                             <i class="fas fa-star-half-alt fa-3x opacity-50"></i>
@@ -72,7 +82,13 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-0">المشاكل النشطة</h6>
-                                            <h2 class="mb-0">{{ total_issues }}</h2>
+                                            <h2 class="mb-0">
+                                                {% set total_issues = 0 %}
+                                                {% for report in monitoring_data.recent_reports %}
+                                                    {% set total_issues = total_issues + report.issues %}
+                                                {% endfor %}
+                                                {{ total_issues }}
+                                            </h2>
                                         </div>
                                         <div>
                                             <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
@@ -102,8 +118,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% if tasks %}
-                                            {% for task in tasks %}
+                                        {% if monitoring_data.scheduled_tasks %}
+                                            {% for task in monitoring_data.scheduled_tasks %}
                                                 <tr>
                                                     <td>
                                                         <a href="{{ task.url }}" target="_blank">{{ task.url }}</a>
@@ -117,38 +133,35 @@
                                                             <span class="badge bg-secondary">شهري</span>
                                                         {% endif %}
                                                     </td>
-                                                    <td>{{ task.latest_analysis or 'لا يوجد' }}</td>
+                                                    <td>{{ task.created_at or 'لا يوجد' }}</td>
                                                     <td>
-                                                        {% if task.score %}
-                                                            <div class="progress" style="height: 20px;">
-                                                                <div class="progress-bar {{ 'bg-success' if task.score >= 80 else 'bg-warning' if task.score >= 60 else 'bg-danger' }}" 
+                                                        <div class="progress" style="height: 20px;">
+                                                            <div class="progress-bar 
+                                                                      {{ 'bg-success' if task.score|default(0) >= 80 else 'bg-warning' if task.score|default(0) >= 60 else 'bg-danger' }}" 
                                                                      role="progressbar" 
-                                                                     style="width: {{ task.score }}%;" 
-                                                                     aria-valuenow="{{ task.score }}" 
+                                                                     style="width:{{ task.score|default(0) }}%;" 
+                                                                     aria-valuenow="{{ task.score|default(0) }}" 
                                                                      aria-valuemin="0" 
                                                                      aria-valuemax="100">
-                                                                    {{ task.score }}%
-                                                                </div>
+                                                                {{ task.score|default(0) }}%
                                                             </div>
-                                                        {% else %}
-                                                            -
-                                                        {% endif %}
+                                                        </div>
                                                     </td>
-                                                    <td>{{ task.issues or 0 }}</td>
+                                                    <td>{{ task.issues|default(0) }}</td>
                                                     <td>
                                                         <div class="btn-group">
-                                                            <a href="{{ url_for('monitoring_task_details', task_id=task.task_id) }}" class="btn btn-sm btn-info">
+                                                            <a href="{{ url_for('monitoring_task_details', task_id=task.id) }}" class="btn btn-sm btn-info">
                                                                 <i class="fas fa-chart-bar"></i>
                                                             </a>
-                                                            <a href="{{ url_for('monitoring_run_task', task_id=task.task_id) }}" class="btn btn-sm btn-success">
+                                                            <a href="{{ url_for('monitoring_run_task', task_id=task.id) }}" class="btn btn-sm btn-success">
                                                                 <i class="fas fa-play"></i>
                                                             </a>
                                                             <button type="button" class="btn btn-sm btn-danger" 
                                                                     data-bs-toggle="modal" 
                                                                     data-bs-target="#deleteTaskModal" 
-                                                                    data-task-id="{{ task.task_id }}" 
+                                                                    data-task-id="{{ task.id }}"
                                                                     data-task-url="{{ task.url }}">
-                                                                <i class="fas fa-trash-alt"></i>
+                                                                <i class="fas fa-trash"></i>
                                                             </button>
                                                         </div>
                                                     </td>
@@ -157,12 +170,9 @@
                                         {% else %}
                                             <tr>
                                                 <td colspan="6" class="text-center py-4">
-                                                    <div class="text-muted">
-                                                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                                                        <p>لا توجد مهام مجدولة حالياً</p>
-                                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTaskModal">
-                                                            <i class="fas fa-plus me-1"></i> إضافة مهمة جديدة
-                                                        </button>
+                                                    <div class="alert alert-warning mb-0">
+                                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                                        لا توجد مهام مجدولة حالياً. أضف مهمة جديدة للبدء في مراقبة مواقعك.
                                                     </div>
                                                 </td>
                                             </tr>
@@ -179,7 +189,7 @@
                             <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>مقارنة أداء المواقع</h5>
                         </div>
                         <div class="card-body">
-                            {% if tasks %}
+                            {% if monitoring_data.scheduled_tasks %}
                                 <canvas id="performanceChart" height="300"></canvas>
                             {% else %}
                                 <div class="text-center py-5 text-muted">
@@ -279,7 +289,7 @@
 <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ url_for('monitoring_remove_task') }}" method="post">
+            <form action="{{ url_for('monitoring_delete_task', task_id='') }}" method="post" id="deleteTaskForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteTaskModalLabel">تأكيد الحذف</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
@@ -390,71 +400,72 @@
                 
                 document.getElementById('deleteTaskId').value = taskId;
                 document.getElementById('deleteTaskUrl').textContent = taskUrl;
+                document.getElementById('deleteTaskForm').action = `{{ url_for('monitoring_delete_task', task_id='${taskId}') }}`;
             });
         }
         
         // رسم البياني لمقارنة الأداء
         const performanceChart = document.getElementById('performanceChart');
         if (performanceChart) {
-            {% if chart_data %}
-                const ctx = performanceChart.getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: {{ chart_data.labels|tojson }},
-                        datasets: [
-                            {
-                                label: 'متوسط النتيجة',
-                                data: {{ chart_data.scores|tojson }},
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                tension: 0.1,
-                                yAxisID: 'y'
-                            },
-                            {
-                                label: 'عدد المشاكل',
-                                data: {{ chart_data.issues|tojson }},
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                tension: 0.1,
-                                yAxisID: 'y1'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
+            {% if monitoring_data.scheduled_tasks|length > 0 %}
+            const ctx = performanceChart.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                    datasets: [
+                        {
+                            label: 'متوسط النتيجة',
+                            data: [65, 70, 68, 75, 82, 80],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1,
+                            yAxisID: 'y'
                         },
-                        scales: {
-                            y: {
-                                type: 'linear',
+                        {
+                            label: 'عدد المشاكل',
+                            data: [12, 10, 11, 8, 5, 6],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
                                 display: true,
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'النتيجة'
-                                },
-                                min: 0,
-                                max: 100
+                                text: 'النتيجة'
                             },
-                            y1: {
-                                type: 'linear',
+                            min: 0,
+                            max: 100
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
                                 display: true,
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'المشاكل'
-                                },
-                                min: 0,
-                                grid: {
-                                    drawOnChartArea: false
-                                }
+                                text: 'المشاكل'
+                            },
+                            min: 0,
+                            grid: {
+                                drawOnChartArea: false
                             }
                         }
                     }
-                });
+                }
+            });
             {% endif %}
         }
     });

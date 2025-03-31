@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}نتائج تحليل السيو الدلالي - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">نتائج تحليل السيو الدلالي</h5>
+                    <a href="{{ url_for('analyze_semantic_seo') }}" class="btn btn-light btn-sm">تحليل جديد</a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6>الكلمة المفتاحية الرئيسية: <strong>{{ main_keyword }}</strong></h6>
+                        {% if related_keywords %}
+                        <h6 class="mt-2">الكلمات المفتاحية ذات الصلة:</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for keyword in related_keywords.splitlines() %}
+                                {% if keyword %}
+                                <span class="badge bg-secondary">{{ keyword }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- المفاهيم المرتبطة -->
+                    <h5 class="border-bottom pb-2 mt-4">المفاهيم المرتبطة بالكلمة المفتاحية</h5>
+                    <div class="row">
+                        {% for concept in concepts %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ concept.concept }}</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">درجة الترابط:</small>
+                                        <div class="progress" style="width: 60%; height: 15px;">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ (concept.similarity * 100)|round|int }}%;" 
+                                                 aria-valuenow="{{ (concept.similarity * 100)|round|int }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ (concept.similarity * 100)|round|int }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- تحليل تغطية المحتوى -->
+                    {% if content_coverage %}
+                    <h5 class="border-bottom pb-2 mt-5">تحليل تغطية المحتوى للمفاهيم الدلالية</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h3 class="mb-0">{{ content_coverage.coverage.score|round|int }}%</h3>
+                                    <p class="mb-0">نسبة التغطية الدلالية للمحتوى</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between text-center">
+                                        <div>
+                                            <h4 class="text-success">{{ content_coverage.coverage.covered }}</h4>
+                                            <p class="mb-0">مفاهيم موجودة</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-warning">{{ content_coverage.coverage.partially_covered }}</h4>
+                                            <p class="mb-0">مفاهيم جزئية</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-danger">{{ content_coverage.coverage.missing }}</h4>
+                                            <p class="mb-0">مفاهيم مفقودة</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- توصيات تحسين التغطية -->
+                    {% if content_coverage.recommendations %}
+                    <h6 class="border-bottom pb-2">توصيات لتحسين التغطية الدلالية:</h6>
+                    <div class="list-group mb-4">
+                        {% for rec in content_coverage.recommendations %}
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ rec.concept }}</strong>: {{ rec.message }}
+                            </div>
+                            <span class="badge 
+                                {% if rec.priority == 'عالية' %}bg-danger{% endif %}
+                                {% if rec.priority == 'متوسطة' %}bg-warning text-dark{% endif %}
+                                {% if rec.priority == 'منخفضة' %}bg-info{% endif %}">
+                                {{ rec.priority }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- تفاصيل كل مفهوم -->
+                    <h6 class="border-bottom pb-2">تفاصيل تغطية المفاهيم:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>المفهوم</th>
+                                    <th>الحالة</th>
+                                    <th>العدد الحالي</th>
+                                    <th>العدد الموصى به</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for concept in content_coverage.concepts %}
+                                <tr>
+                                    <td>
+                                        {{ concept.concept }}
+                                        {% if concept.primary %}
+                                        <span class="badge bg-primary ms-1">أساسي</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if concept.coverage.status == 'موجود' %}bg-success{% endif %}
+                                            {% if concept.coverage.status == 'موجود جزئيًا' %}bg-warning text-dark{% endif %}
+                                            {% if concept.coverage.status == 'مفقود' %}bg-danger{% endif %}">
+                                            {{ concept.coverage.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ concept.coverage.count }}</td>
+                                    <td>{{ concept.coverage.recommended_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- خطة السيو الدلالية -->
+                    <h5 class="border-bottom pb-2 mt-5">خطة السيو الدلالية</h5>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">العنوان المقترح</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ seo_plan.content_outline.title }}</p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2">مخطط المحتوى:</h6>
+                    <div class="list-group mb-4">
+                        {% for section in seo_plan.content_outline.sections %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ section.title }}</h6>
+                                <span class="badge bg-secondary">{{ section.type }}</span>
+                            </div>
+                            <p class="mb-1 text-muted">{{ section.content_suggestion }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2">توصيات الكلمات المفتاحية:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الكلمة المفتاحية</th>
+                                    <th>النوع</th>
+                                    <th>الموقع المقترح</th>
+                                    <th>العدد الموصى به</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for kw in seo_plan.keyword_recommendations %}
+                                <tr>
+                                    <td>{{ kw.keyword }}</td>
+                                    <td>
+                                        <span class="badge
+                                            {% if kw.type == 'primary' %}bg-primary{% endif %}
+                                            {% if kw.type == 'secondary' %}bg-success{% endif %}
+                                            {% if kw.type == 'related' %}bg-info{% endif %}">
+                                            {% if kw.type == 'primary' %}رئيسية{% endif %}
+                                            {% if kw.type == 'secondary' %}ثانوية{% endif %}
+                                            {% if kw.type == 'related' %}ذات صلة{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% for loc in kw.location %}
+                                        <span class="badge bg-secondary me-1">{{ loc }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ kw.recommended_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

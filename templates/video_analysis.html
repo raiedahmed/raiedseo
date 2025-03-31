@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block page_title %}تحليل تصنيف الفيديو{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">تحليل تصنيف الفيديو</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <form action="{{ url_for('video_analysis') }}" method="post" class="mb-4">
+                            <div class="mb-3">
+                                <label for="video_url" class="form-label">رابط الفيديو</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fab fa-youtube"></i></span>
+                                    <input type="url" class="form-control" id="video_url" name="video_url" placeholder="https://www.youtube.com/watch?v=..." required>
+                                </div>
+                                <div class="form-text">أدخل رابط فيديو يوتيوب للتحليل</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="analysis_type" class="form-label">نوع التحليل</label>
+                                <select class="form-select" id="analysis_type" name="analysis_type">
+                                    <option value="seo">تحليل SEO</option>
+                                    <option value="engagement">تحليل التفاعل</option>
+                                    <option value="competitors">مقارنة مع المنافسين</option>
+                                    <option value="full">تحليل شامل</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">تحليل الفيديو</button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">نصائح لتحسين تصنيف الفيديو</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> استخدم عنوان جذاب ووصف مفصل</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> أضف كلمات مفتاحية مناسبة للفيديو</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> قم بإنشاء صورة مصغرة مخصصة</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> شجع المشاهدين على التفاعل والاشتراك</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> قم بإدخال رابط الفيديو الذي ترغب في تحليله للحصول على توصيات لتحسين ظهوره في نتائج البحث وزيادة المشاهدات.
+                </div>
+                
+                <!-- هنا ستظهر نتائج التحليل بعد الإرسال -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // يمكن إضافة أي كود JavaScript خاص بالصفحة هنا
+    });
+</script>
+{% endblock %}

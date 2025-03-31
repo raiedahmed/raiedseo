@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block title %}تحسين السيو لليوتيوب{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> تحسين السيو لليوتيوب</h1>
+    <p class="section-description">تحسين ظهور قناتك وفيديوهاتك في نتائج البحث على يوتيوب وجوجل</p>
+</div>
+
+<div class="youtube-seo-tools">
+    <div class="row mb-5">
+        <!-- تحليل الكلمات المفتاحية -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> تحليل الكلمات المفتاحية للفيديوهات</h2>
+                </div>
+                <div class="card-body">
+                    <p>اكتشف أفضل الكلمات المفتاحية المناسبة لمحتوى الفيديو الخاص بك</p>
+                    <form id="youtube-keyword-form" action="{{ url_for('youtube_keywords') }}" method="post">
+                        <div class="form-group mb-3">
+                            <label for="video-topic">موضوع الفيديو</label>
+                            <input type="text" id="video-topic" name="topic" class="form-control" placeholder="أدخل موضوع الفيديو" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="yt-language">اللغة</label>
+                            <select id="yt-language" name="language" class="form-control">
+                                <option value="ar">العربية</option>
+                                <option value="en">الإنجليزية</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> تحليل الكلمات المفتاحية
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- تحليل تصنيف الفيديوهات -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> تحليل تصنيف الفيديوهات</h2>
+                </div>
+                <div class="card-body">
+                    <p>تتبع تصنيف فيديوهاتك في نتائج البحث على يوتيوب واكتشف فرص التحسين</p>
+                    <form id="video-rank-form" action="{{ url_for('video_ranking') }}" method="post">
+                        <div class="form-group mb-3">
+                            <label for="video-url">رابط الفيديو</label>
+                            <input type="url" id="video-url" name="video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=xxxx" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="video-keywords">الكلمات المفتاحية (كل كلمة في سطر)</label>
+                            <textarea id="video-keywords" name="keywords" class="form-control" rows="3" placeholder="أدخل الكلمات المفتاحية التي ترغب في تتبع ترتيب الفيديو لها"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i> تحليل التصنيف
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <!-- تحليل المنافسين -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> تحليل منافسي اليوتيوب</h2>
+                </div>
+                <div class="card-body">
+                    <p>حلل قنوات منافسيك واكتشف استراتيجيات السيو التي يستخدمونها</p>
+                    <form id="competitor-analysis-form" action="{{ url_for('youtube_competitor') }}" method="post">
+                        <div class="form-group mb-3">
+                            <label for="channel-url">رابط قناة المنافس</label>
+                            <input type="url" id="channel-url" name="channel_url" class="form-control" placeholder="https://www.youtube.com/c/channelname" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="video-count">عدد الفيديوهات للتحليل</label>
+                            <select id="video-count" name="video_count" class="form-control">
+                                <option value="5">5 فيديوهات</option>
+                                <option value="10" selected>10 فيديوهات</option>
+                                <option value="20">20 فيديو</option>
+                                <option value="50">50 فيديو</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> تحليل المنافس
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- توليد وتحسين عناوين ووصف الفيديوهات -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-edit"></i> تحسين عنوان ووصف الفيديو</h2>
+                </div>
+                <div class="card-body">
+                    <p>توليد وتحسين عناوين ووصف الفيديوهات لزيادة نسب الظهور والنقرات</p>
+                    <form id="video-content-form" action="{{ url_for('video_content') }}" method="post">
+                        <div class="form-group mb-3">
+                            <label for="video-topic-content">موضوع الفيديو</label>
+                            <input type="text" id="video-topic-content" name="topic" class="form-control" placeholder="أدخل موضوع الفيديو بشكل مفصل" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="current-title">العنوان الحالي (اختياري)</label>
+                            <input type="text" id="current-title" name="current_title" class="form-control" placeholder="العنوان الحالي للفيديو إن وجد">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="current-description">الوصف الحالي (اختياري)</label>
+                            <textarea id="current-description" name="current_description" class="form-control" rows="3" placeholder="الوصف الحالي للفيديو إن وجد"></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="target-keywords">الكلمات المفتاحية المستهدفة</label>
+                            <input type="text" id="target-keywords" name="target_keywords" class="form-control" placeholder="الكلمات المفتاحية مفصولة بفواصل">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-magic"></i> تحسين المحتوى
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- تحليل أداء القناة والفيديوهات -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> تحليل أداء القناة والفيديوهات</h2>
+                </div>
+                <div class="card-body">
+                    <p>مراقبة وتحليل أداء قناتك وفيديوهاتك واكتشاف فرص تحسين السيو</p>
+                    <form id="channel-analysis-form" action="{{ url_for('channel_analysis') }}" method="post">
+                        <div class="row">
+                            <div class="col-lg-4 mb-3">
+                                <div class="form-group">
+                                    <label for="channel-url-analysis">رابط القناة</label>
+                                    <input type="url" id="channel-url-analysis" name="channel_url" class="form-control" placeholder="https://www.youtube.com/c/channelname" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <div class="form-group">
+                                    <label for="analysis-period">فترة التحليل</label>
+                                    <select id="analysis-period" name="period" class="form-control">
+                                        <option value="7">آخر 7 أيام</option>
+                                        <option value="30" selected>آخر 30 يوم</option>
+                                        <option value="90">آخر 3 أشهر</option>
+                                        <option value="180">آخر 6 أشهر</option>
+                                        <option value="365">آخر سنة</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <div class="form-group">
+                                    <label for="analysis-type">نوع التحليل</label>
+                                    <select id="analysis-type" name="analysis_type" class="form-control">
+                                        <option value="overall">تحليل عام</option>
+                                        <option value="videos">تحليل الفيديوهات</option>
+                                        <option value="keywords">تحليل الكلمات المفتاحية</option>
+                                        <option value="engagement">تحليل التفاعل</option>
+                                        <option value="comprehensive" selected>تحليل شامل</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-analytics"></i> تحليل القناة
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- الإرشادات والنصائح -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h3 class="alert-heading"><i class="fas fa-lightbulb"></i> نصائح لتحسين سيو اليوتيوب</h3>
+                <ul>
+                    <li>استخدم عناوين جذابة وواضحة تحتوي على الكلمات المفتاحية المستهدفة</li>
+                    <li>قم بكتابة وصف مفصل للفيديو (على الأقل 250 كلمة) يتضمن الكلمات المفتاحية بشكل طبيعي</li>
+                    <li>أضف وسوم (tags) مناسبة للفيديو تعكس محتواه</li>
+                    <li>استخدم صورة مصغرة مخصصة وجذابة للفيديو</li>
+                    <li>قم بتضمين نصوص الفيديو (transcripts) لتحسين فهرسة المحتوى</li>
+                    <li>نظم فيديوهاتك في قوائم تشغيل منطقية</li>
+                    <li>تفاعل مع المشاهدين من خلال التعليقات</li>
+                    <li>ابحث دائماً عن الاتجاهات الحالية في مجالك</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

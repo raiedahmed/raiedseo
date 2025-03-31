@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}صفحة غير موجودة{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content text-center">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">الصفحة غير موجودة</h2>
+        <p class="error-message">عذراً، الصفحة التي تبحث عنها غير موجودة.</p>
+        <div class="error-actions mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> العودة إلى الصفحة الرئيسية
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+    }
+    
+    .error-code {
+        font-size: 120px;
+        font-weight: 700;
+        color: #3498db;
+        margin-bottom: 10px;
+    }
+    
+    .error-title {
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+    
+    .error-message {
+        font-size: 18px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+
+{% block title %}إصلاح مشاكل السيو{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fas fa-tools"></i> إصلاح مشاكل السيو</h1>
+    <p class="section-description">إصلاح مشاكل السيو في موقعك تلقائياً بناءً على نتائج التحليل السابقة</p>
+</div>
+
+<div class="fix-issues-container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-wrench"></i> إصلاح مشاكل السيو</h2>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('fix') }}" method="post" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    <label for="url"><i class="fas fa-link"></i> رابط الموقع *</label>
+                                    <input type="url" class="form-control" id="url" name="url" placeholder="https://example.com" required>
+                                    <div class="invalid-feedback">الرجاء إدخال رابط صحيح</div>
+                                    <small class="form-text text-muted">أدخل رابط الموقع الذي تريد إصلاح مشاكل السيو فيه</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    <label for="report_id"><i class="fas fa-file-alt"></i> اختر تقرير التحليل *</label>
+                                    <select class="form-control" id="report_id" name="report_id" required>
+                                        <option value="" selected disabled>-- اختر تقرير التحليل --</option>
+                                        {% for result in recent_results %}
+                                        <option value="{{ result.dir_name }}">{{ result.url }} ({{ result.datetime }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback">الرجاء اختيار تقرير تحليل</div>
+                                    <small class="form-text text-muted">اختر تقرير التحليل الذي تريد إصلاح مشاكله</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="backup" name="backup" checked>
+                                    <label class="form-check-label" for="backup">
+                                        عمل نسخة احتياطية قبل الإصلاح
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        ينصح بشدة بعمل نسخة احتياطية قبل تطبيق الإصلاحات التلقائية
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <strong>تنبيه:</strong> الإصلاح التلقائي قد يؤدي إلى تغييرات في محتوى وبنية الموقع. تأكد من مراجعة التغييرات بعد تطبيقها.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-magic"></i> بدء الإصلاح التلقائي
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if recent_results|length == 0 %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>تنبيه:</strong> لا توجد تحليلات سابقة. يرجى <a href="{{ url_for('analyze') }}" class="alert-link">تحليل موقعك أولاً</a> للحصول على تقرير مفصل بالمشاكل.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-question-circle"></i> ما هي المشاكل التي يمكن إصلاحها؟</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>مشاكل وسوم الميتا:</h4>
+                            <ul>
+                                <li>العناوين الطويلة جداً أو القصيرة جداً</li>
+                                <li>أوصاف الصفحات المفقودة أو غير المناسبة</li>
+                                <li>وسوم الكانونيكال المفقودة</li>
+                                <li>العناوين المكررة</li>
+                                <li>وسوم الروبوت غير المناسبة</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>مشاكل المحتوى والروابط:</h4>
+                            <ul>
+                                <li>صور بدون نص بديل</li>
+                                <li>روابط معطوبة</li>
+                                <li>عناوين الصفحات غير المنظمة (H1, H2, ...)</li>
+                                <li>تحسين كثافة الكلمات المفتاحية</li>
+                                <li>إصلاح بنية الروابط الداخلية</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-lightbulb"></i>
+                                <strong>نصيحة:</strong> بعض المشاكل قد تتطلب تدخلاً يدوياً. راجع دائماً تقرير التحليل الأصلي للاطلاع على كافة المشاكل المكتشفة.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // التحقق من صحة النموذج
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %} 

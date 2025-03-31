@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}تقييم المحتوى - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">تقييم المحتوى من منظور السيو</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">هذه الأداة تساعدك في تقييم محتوى المقالات بناءً على عوامل السيو والوضوح وسهولة القراءة</p>
+                    
+                    <form method="post" action="{{ url_for('content') }}">
+                        <div class="form-group mb-3">
+                            <label for="content_type">نوع المحتوى</label>
+                            <select class="form-select" id="content_type" name="content_type">
+                                <option value="article">مقال</option>
+                                <option value="product">صفحة منتج</option>
+                                <option value="landing_page">صفحة هبوط</option>
+                                <option value="blog_post">تدوينة</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="target_keywords">الكلمات المفتاحية المستهدفة (كلمة واحدة في كل سطر)</label>
+                            <textarea class="form-control" id="target_keywords" name="target_keywords" rows="3" required></textarea>
+                            <small class="form-text text-muted">ضع الكلمة المفتاحية الرئيسية في السطر الأول</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="content">المحتوى المراد تقييمه</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                            <small class="form-text text-muted">ضع المحتوى كاملاً للحصول على تقييم دقيق</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">تقييم المحتوى</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

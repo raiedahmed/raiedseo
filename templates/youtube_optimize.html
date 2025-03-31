@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}تحسين محتوى فيديو اليوتيوب - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">تحسين محتوى فيديو اليوتيوب</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        هذه الأداة تساعدك في تحسين عنوان ووصف الفيديو وتنظيم كلماتك المفتاحية لتحقيق أفضل نتائج في محرك بحث يوتيوب
+                    </p>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{{ url_for('optimize_video') }}">
+                        <div class="form-group mb-3">
+                            <label for="video_title">عنوان الفيديو الحالي (اختياري)</label>
+                            <input type="text" class="form-control" id="video_title" name="video_title" placeholder="أدخل عنوان الفيديو الحالي">
+                            <small class="form-text text-muted">إذا كان لديك عنوان بالفعل، يمكنك إدخاله هنا للحصول على اقتراحات للتحسين</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="video_description">وصف الفيديو الحالي (اختياري)</label>
+                            <textarea class="form-control" id="video_description" name="video_description" rows="5" placeholder="أدخل وصف الفيديو الحالي"></textarea>
+                            <small class="form-text text-muted">إذا كان لديك وصف بالفعل، أدخله هنا للحصول على اقتراحات للتحسين</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="keywords">الكلمات المفتاحية المستهدفة <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="keywords" name="keywords" rows="3" placeholder="كلمة مفتاحية واحدة في كل سطر" required></textarea>
+                            <small class="form-text text-muted">ضع الكلمة المفتاحية الرئيسية في السطر الأول، متبوعة بالكلمات الثانوية</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="target_audience">الجمهور المستهدف <span class="text-danger">*</span></label>
+                            <select class="form-select" id="target_audience" name="target_audience" required>
+                                <option value="" selected disabled>اختر الجمهور المستهدف</option>
+                                <option value="beginners">مبتدئين في المجال</option>
+                                <option value="intermediate">متوسطي الخبرة</option>
+                                <option value="advanced">محترفين ومتقدمين</option>
+                                <option value="general">جمهور عام</option>
+                                <option value="business">أصحاب أعمال وشركات</option>
+                                <option value="students">طلاب وباحثين</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="trending" name="trending" value="1">
+                            <label class="form-check-label" for="trending">
+                                مراعاة الموضوعات الرائجة حالياً
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-magic me-1"></i> تحسين محتوى الفيديو
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">نصائح لتحسين محتوى فيديو اليوتيوب</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            استخدم الكلمة المفتاحية الرئيسية في بداية عنوان الفيديو
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            اكتب وصفاً تفصيلياً يتضمن الكلمات المفتاحية في الفقرات الأولى
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            أضف علامات وصفية (Tags) تتضمن الكلمات المفتاحية بصيغ مختلفة
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            أضف روابط ذات صلة لفيديوهاتك الأخرى في وصف الفيديو
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            استخدم مقدمة جذابة في أول 15 ثانية من الفيديو للحفاظ على المشاهدين
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -30,11 +30,20 @@
         </div>
         <div class="sidebar-menu">
             <ul>
+                <!-- القسم الرئيسي -->
+                <li class="menu-header">
+                    <span>القائمة الرئيسية</span>
+                </li>
                 <li class="{% if request.path == '/' %}active{% endif %}">
                     <a href="{{ url_for('index') }}">
                         <i class="fas fa-home"></i>
                         <span>الرئيسية</span>
                     </a>
+                </li>
+                
+                <!-- قسم تحليل السيو -->
+                <li class="menu-header">
+                    <span>تحليل وتحسين</span>
                 </li>
                 <li class="{% if request.path == '/analyze' %}active{% endif %}">
                     <a href="{{ url_for('analyze') }}">
@@ -54,11 +63,39 @@
                         <span>خريطة الموقع</span>
                     </a>
                 </li>
+                
+                <!-- قسم المحتوى والذكاء الاصطناعي -->
+                <li class="menu-header">
+                    <span>المحتوى والذكاء الاصطناعي</span>
+                </li>
                 <li class="{% if request.path == '/content-generator' %}active{% endif %}">
                     <a href="{{ url_for('content_generator') }}">
                         <i class="fas fa-robot"></i>
                         <span>مولد المحتوى</span>
                     </a>
+                </li>
+                <li class="{% if request.path == '/keyword-analysis' %}active{% endif %}">
+                    <a href="{{ url_for('keyword_analysis') }}">
+                        <i class="fas fa-key"></i>
+                        <span>تحليل الكلمات المفتاحية</span>
+                    </a>
+                </li>
+                <li class="{% if request.path == '/video-analysis' %}active{% endif %}">
+                    <a href="{{ url_for('video_analysis') }}">
+                        <i class="fas fa-video"></i>
+                        <span>تحليل تصنيف الفيديو</span>
+                    </a>
+                </li>
+                <li class="{% if request.path == '/competitors' %}active{% endif %}">
+                    <a href="{{ url_for('competitors') }}">
+                        <i class="fas fa-users"></i>
+                        <span>تحليل المنافسين</span>
+                    </a>
+                </li>
+                
+                <!-- قسم المراقبة والتقارير -->
+                <li class="menu-header">
+                    <span>المراقبة والإدارة</span>
                 </li>
                 <li class="{% if request.path == '/monitoring' or request.path.startswith('/monitoring/') %}active{% endif %}">
                     <a href="{{ url_for('monitoring') }}">

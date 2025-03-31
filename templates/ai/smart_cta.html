@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}مولد دعوات العمل الذكية - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">مولد دعوات العمل الذكية (Smart CTA Generator)</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">هذه الأداة تساعدك في إنشاء عبارات تحفيزية ذكية مناسبة لنوع المحتوى الخاص بك</p>
+                    
+                    <form method="post" action="{{ url_for('cta') }}">
+                        <div class="form-group mb-3">
+                            <label for="content_type">نوع المحتوى</label>
+                            <select class="form-select" id="content_type" name="content_type">
+                                <option value="informational">معلوماتي (مقالات، أدلة، شروحات)</option>
+                                <option value="commercial">تجاري (صفحات المنتجات، المقارنات)</option>
+                                <option value="navigational">ملاحي (صفحات الخدمات، الأدلة)</option>
+                                <option value="transactional">شرائي (صفحات الشراء، العروض)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="topic">موضوع المحتوى</label>
+                            <input type="text" class="form-control" id="topic" name="topic" required>
+                            <small class="form-text text-muted">مثال: تحسين محركات البحث، تصميم مواقع، تسويق رقمي</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="keywords">الكلمات المفتاحية (اختياري، كلمة واحدة في كل سطر)</label>
+                            <textarea class="form-control" id="keywords" name="keywords" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="num_ctas">عدد دعوات العمل المطلوبة</label>
+                            <select class="form-select" id="num_ctas" name="num_ctas">
+                                <option value="3">3 عبارات</option>
+                                <option value="5">5 عبارات</option>
+                                <option value="7">7 عبارات</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">توليد دعوات العمل</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

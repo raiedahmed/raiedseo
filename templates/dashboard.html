@@ -1,0 +1,652 @@
+{% extends "layout.html" %}
+
+{% block title %}لوحة المعلومات | RSEO v2.0{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fas fa-tachometer-alt"></i> لوحة المعلومات</h1>
+    <p class="section-description">نظرة عامة على أداء موقعك وتحليلات السيو المتقدمة</p>
+    <div class="version-badge">
+        <span class="badge bg-primary">الإصدار 2.0</span>
+    </div>
+</div>
+
+<div class="dashboard-overview">
+    <div class="row">
+        <!-- إحصائيات سريعة -->
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stat-details">
+                    <h3 class="stat-number">{{ stats.keywords_count }}</h3>
+                    <p class="stat-label">الكلمات المتتبعة</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-link"></i>
+                </div>
+                <div class="stat-details">
+                    <h3 class="stat-number">{{ stats.backlinks_count }}</h3>
+                    <p class="stat-label">الروابط الخلفية</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-details">
+                    <h3 class="stat-number">{{ stats.top10_count }}</h3>
+                    <p class="stat-label">كلمات في Top 10</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-details">
+                    <h3 class="stat-number">{{ (stats.dofollow_count / stats.backlinks_count * 100)|round|int if stats.backlinks_count else 0 }}%</h3>
+                    <p class="stat-label">نسبة روابط Dofollow</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- تحديث البيانات -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('regenerate_data') }}" class="btn btn-primary">
+            <i class="fas fa-sync"></i> تحديث البيانات
+        </a>
+    </div>
+</div>
+
+<!-- المحتوى الرئيسي للوحة المعلومات -->
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card welcome-card">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="mb-3">أهلاً بك في RSEO</h1>
+                            <p class="lead mb-3">منصة تحليل وتحسين السيو المتكاملة ببرمجة عربية 100%</p>
+                            <p class="text-muted">استخدم الأدوات المتاحة لتحليل موقعك، وتتبع تصنيفه، وتحسين محتواه لتحقيق أفضل النتائج في محركات البحث</p>
+                            <a href="{{ url_for('content') }}" class="btn btn-primary mt-2">
+                                <i class="fas fa-robot me-1"></i> تقييم محتوى جديد (AI)
+                            </a>
+                            <a href="#ai-features" class="btn btn-outline-primary mt-2">
+                                <i class="fas fa-brain me-1"></i> استكشاف ميزات الذكاء الاصطناعي
+                            </a>
+                        </div>
+                        <div class="col-md-4 d-none d-md-block text-center">
+                            <img src="{{ url_for('static', filename='img/dashboard-illustration.svg') }}" alt="RSEO Dashboard" class="img-fluid" style="max-height: 200px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ميزات الذكاء الاصطناعي المتقدمة -->
+    <div id="ai-features" class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-primary text-white p-3 rounded">
+            <h2><i class="fas fa-brain"></i> ميزات الذكاء الاصطناعي المتقدمة</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                    <h3>تحليل نية المستخدم</h3>
+                    <p>تحديد نية الباحث (معلومة، تجارية، شرائية...) لكل كلمة مفتاحية</p>
+                    <a href="{{ url_for('intent') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>تقييم المحتوى</h3>
+                    <p>تحليل المقالات بناءً على عوامل السيو وجودة الكتابة والوضوح</p>
+                    <a href="{{ url_for('content') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h3>مولد CTA ذكي</h3>
+                    <p>إنشاء عبارات تحفيزية ذكية مناسبة لنوع المحتوى</p>
+                    <a href="{{ url_for('cta') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3>تحليل Semantic SEO</h3>
+                    <p>ربط الكلمات المفتاحية بالمفاهيم الدلالية باستخدام Embeddings</p>
+                    <a href="{{ url_for('semantic') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ميزات تقنية مطورة -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-success text-white p-3 rounded">
+            <h2><i class="fas fa-cogs"></i> ميزات تقنية مطورة لمتخصصي السيو</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-spider"></i>
+                    </div>
+                    <h3>محاكاة Googlebot</h3>
+                    <p>محاكاة طريقة قراءة Google لصفحة الويب وكشف مشاكل الفهرسة</p>
+                    <a href="{{ url_for('googlebot') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <h3>خريطة الروابط الداخلية</h3>
+                    <p>رسم بياني تفاعلي لتوزيع الروابط داخل الموقع واقتراح تحسينات</p>
+                    <a href="{{ url_for('sitemap') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search-location"></i>
+                    </div>
+                    <h3>أداة تحليل SERP</h3>
+                    <p>معاينة شكل ظهور المقال في نتائج البحث ومقارنته مع المنافسين</p>
+                    <a href="{{ url_for('serp') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ميزات احترافية لتحليل الأداء والمنافسين -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-danger text-white p-3 rounded">
+            <h2><i class="fas fa-chart-bar"></i> ميزات تحليل الأداء والمنافسين</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>مراقبة تقلبات التصنيف</h3>
+                    <p>تتبع الكلمات المفتاحية مع إشعارات ذكية عند حدوث تغييرات</p>
+                    <a href="{{ url_for('rank') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h3>تحليل فجوة المحتوى</h3>
+                    <p>مقارنة المحتوى مع المنافسين وإبراز المواضيع الناقصة</p>
+                    <a href="{{ url_for('gap') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h3>الصفحات الأكثر ربحًا</h3>
+                    <p>تحديد الصفحات التي تجذب أكبر عدد من الزوار والعملاء المحتملين</p>
+                    <a href="{{ url_for('profit') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- أدوات تحسين اليوتيوب -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-danger text-white p-3 rounded">
+            <h2><i class="fab fa-youtube"></i> أدوات تحسين اليوتيوب</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3>تحليل كلمات يوتيوب</h3>
+                    <p>البحث عن أفضل الكلمات المفتاحية لتحسين المحتوى على يوتيوب</p>
+                    <a href="{{ url_for('youtube_seo') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sort-numeric-up"></i>
+                    </div>
+                    <h3>تحليل تصنيف الفيديو</h3>
+                    <p>تحليل تصنيف الفيديو ومعرفة أسباب تقدمه أو تأخره</p>
+                    <a href="{{ url_for('youtube_keywords') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                    <h3>تحليل المنافسين</h3>
+                    <p>تحليل القنوات المنافسة واستراتيجياتها والاستفادة منها</p>
+                    <a href="{{ url_for('youtube_competitor') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>تحسين محتوى الفيديو</h3>
+                    <p>تحسين وتهيئة محتوى الفيديو لزيادة المشاهدات والتفاعل</p>
+                    <a href="{{ url_for('optimize_video') }}" class="btn btn-sm btn-primary mt-2">استخدام الأداة</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التكاملات المتقدمة -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-info text-white p-3 rounded">
+            <h2><i class="fas fa-plug"></i> تكاملات متقدمة</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-chrome"></i>
+                    </div>
+                    <h3>إضافة كروم تحليلية</h3>
+                    <p>تحليل فوري لأي صفحة أثناء التصفح مع ربطها بحسابك</p>
+                    <a href="#" class="btn btn-sm btn-primary mt-2">تحميل الإضافة</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <h3>تكامل مع Google</h3>
+                    <p>استيراد بيانات Search Console و GA4 وتحليلها وربطها</p>
+                    <a href="{{ url_for('google') }}" class="btn btn-sm btn-primary mt-2">إعداد التكامل</a>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>واجهة API</h3>
+                    <p>استخدام قدرات RSEO داخل تطبيقاتك أو أنظمتك البرمجية</p>
+                    <a href="{{ url_for('api') }}" class="btn btn-sm btn-primary mt-2">توثيق API</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تحسينات أمنية واحترافية -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-warning text-dark p-3 rounded">
+            <h2><i class="fas fa-shield-alt"></i> تحسينات أمنية واحترافية</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>نظام تقييم الأخطاء الحساسة</h3>
+                    <p>يكشف الأخطاء المؤثرة على الفهرسة ويصنفها حسب الخطورة</p>
+                    <a href="{{ url_for('error') }}" class="btn btn-sm btn-primary mt-2">فحص الموقع</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>تقارير تفاعلية قابلة للمشاركة</h3>
+                    <p>إنشاء تقارير PDF وروابط تفاعلية مع إمكانية التعليق والتوقيع</p>
+                    <a href="{{ url_for('report') }}" class="btn btn-sm btn-primary mt-2">إنشاء تقرير</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مركز تعليمي ذكي -->
+    <div class="dashboard-section mt-4">
+        <div class="section-title bg-gradient-purple text-white p-3 rounded">
+            <h2><i class="fas fa-graduation-cap"></i> مركز تعليمي ذكي</h2>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>مساعد RSEO الذكي</h3>
+                    <p>بوت ذكي داخلي متخصص في تحليل وتحسين السيو لموقعك</p>
+                    <a href="{{ url_for('assistant') }}" class="btn btn-sm btn-primary mt-2">تحدث مع المساعد</a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>تدريبات Live</h3>
+                    <p>جلسات تدريبية تفاعلية مبنية على بيانات موقعك الحقيقية</p>
+                    <a href="{{ url_for('training') }}" class="btn btn-sm btn-primary mt-2">بدء التدريب</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- القسم التقليدي للوحة المعلومات -->
+    <div class="dashboard-widgets mt-4">
+        <div class="row">
+            <!-- رسم بياني للتصنيف -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> تطور التصنيف - {{ ranking_trend.keyword }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ranking-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- رسم بياني للروابط -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-link"></i> نمو الروابط الخلفية</h2>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="backlinks-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <!-- أفضل الكلمات المفتاحية -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2><i class="fas fa-star"></i> أفضل الكلمات المفتاحية</h2>
+                        <a href="{{ url_for('rank_tracker') }}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>الكلمة المفتاحية</th>
+                                        <th>الموقع</th>
+                                        <th>التغيير</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if top_keywords %}
+                                        {% for keyword in top_keywords %}
+                                        <tr>
+                                            <td>{{ keyword.keyword }}</td>
+                                            <td><span class="position-badge">{{ keyword.position }}</span></td>
+                                            <td>
+                                                {% if keyword.change > 0 %}
+                                                <span class="text-success"><i class="fas fa-arrow-up"></i> {{ keyword.change }}</span>
+                                                {% elif keyword.change < 0 %}
+                                                <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ keyword.change|abs }}</span>
+                                                {% else %}
+                                                <span class="text-muted"><i class="fas fa-equals"></i> 0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('rank_history', keyword=keyword.keyword, domain='example.com') }}" class="btn btn-sm btn-outline-primary" title="عرض التاريخ">
+                                                    <i class="fas fa-history"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center">لا توجد بيانات للعرض</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- أحدث الروابط الخلفية -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2><i class="fas fa-external-link-alt"></i> أحدث الروابط الخلفية</h2>
+                        <a href="{{ url_for('backlinks_page') }}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>الموقع المصدر</th>
+                                        <th>DA</th>
+                                        <th>نوع الرابط</th>
+                                        <th>تاريخ الاكتشاف</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_backlinks %}
+                                        {% for backlink in recent_backlinks %}
+                                        <tr>
+                                            <td>{{ backlink.source }}</td>
+                                            <td>{{ backlink.da }}</td>
+                                            <td>
+                                                {% if backlink.type == "dofollow" %}
+                                                <span class="badge bg-success">dofollow</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">nofollow</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ backlink.date_found }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center">لا توجد بيانات للعرض</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الشريط السفلي - حقوق الملكية -->
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">
+                        <strong>RSEO v2.0</strong> &copy; {{ now.year }} - جميع الحقوق محفوظة لشركة برو كود للبرمجة والتسويق الإلكتروني
+                    </p>
+                    <p class="mb-0">
+                        <a href="https://www.techprocode.com" target="_blank" class="text-decoration-none">www.techprocode.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
+
+{% block scripts %}
+    <!-- تضمين مكتبة Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // بيانات افتراضية للرسوم البيانية
+            var defaultDates = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
+            var defaultPositions = [5, 4, 3, 3, 2, 1];
+            var defaultBacklinks = [10, 15, 20, 25, 30, 35];
+            
+            // استخدام البيانات من الخادم إذا كانت متوفرة أو البيانات الافتراضية إذا لم تكن موجودة
+            var rankingDates = defaultDates;
+            var rankingPositions = defaultPositions;
+            var backlinksDates = defaultDates;
+            var backlinksCount = defaultBacklinks;
+            var keywordLabel = "تحسين محركات البحث";
+            
+            // رسم بياني للتصنيف
+            var rankingCtx = document.getElementById('ranking-chart');
+            if (rankingCtx) {
+                var rankingChart = new Chart(rankingCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: rankingDates,
+                        datasets: [{
+                            label: keywordLabel,
+                            data: rankingPositions,
+                            fill: false,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1,
+                            pointBackgroundColor: 'rgb(75, 192, 192)',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                reverse: true,
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'الموقع'
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'التاريخ'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'الموقع: ' + context.raw;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // رسم بياني للروابط الخلفية
+            var backlinksCtx = document.getElementById('backlinks-chart');
+            if (backlinksCtx) {
+                var backlinksChart = new Chart(backlinksCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: backlinksDates,
+                        datasets: [{
+                            label: 'الروابط الخلفية',
+                            data: backlinksCount,
+                            fill: true,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            tension: 0.1,
+                            pointBackgroundColor: 'rgb(54, 162, 235)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'عدد الروابط'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'التاريخ'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

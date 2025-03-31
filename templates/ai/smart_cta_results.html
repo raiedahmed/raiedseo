@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}نتائج مولد دعوات العمل الذكية - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">نتائج مولد دعوات العمل الذكية</h5>
+                    <a href="{{ url_for('cta') }}" class="btn btn-light btn-sm">إنشاء دعوات جديدة</a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6>موضوع المحتوى: <strong>{{ topic }}</strong></h6>
+                        <p class="mb-0">نوع المحتوى: 
+                            {% if content_type == 'informational' %}معلوماتي (مقالات، أدلة، شروحات){% endif %}
+                            {% if content_type == 'commercial' %}تجاري (صفحات المنتجات، المقارنات){% endif %}
+                            {% if content_type == 'navigational' %}ملاحي (صفحات الخدمات، الأدلة){% endif %}
+                            {% if content_type == 'transactional' %}شرائي (صفحات الشراء، العروض){% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- العنوان المقترح -->
+                    <h5 class="border-bottom pb-2 mt-4">العنوان المقترح</h5>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="icon-container green me-3 flex-shrink-0">
+                                    <i class="fas fa-heading"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-2">{{ ctas.title }}</h4>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ ctas.title }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- دعوة العمل في بداية المحتوى -->
+                    <h5 class="border-bottom pb-2">دعوة عمل لبداية المحتوى</h5>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="icon-container blue me-3 flex-shrink-0">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-2 lead">{{ ctas.start }}</p>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ ctas.start }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- دعوات العمل للجزء الأوسط من المحتوى -->
+                    {% if ctas.middle|length > 0 %}
+                    <h5 class="border-bottom pb-2">دعوات عمل لوسط المحتوى</h5>
+                    {% for cta in ctas.middle %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="icon-container purple me-3 flex-shrink-0">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-2">{{ cta }}</p>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ cta }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <!-- دعوة العمل في نهاية المحتوى -->
+                    <h5 class="border-bottom pb-2">دعوة عمل لنهاية المحتوى</h5>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="icon-container red me-3 flex-shrink-0">
+                                    <i class="fas fa-flag-checkered"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-2 lead fw-bold">{{ ctas.end }}</p>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ ctas.end }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- توصيات استخدام -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">توصيات لاستخدام دعوات العمل بفعالية:</h5>
+                            <ul class="mb-0">
+                                <li>استخدم العنوان في أعلى المقال وتأكد من تضمينه الكلمة المفتاحية الرئيسية.</li>
+                                <li>ضع دعوة العمل الأولى بعد المقدمة مباشرة لجذب انتباه القارئ منذ البداية.</li>
+                                <li>وزع دعوات العمل في وسط المحتوى بعد النقاط المهمة أو الاستنتاجات.</li>
+                                <li>استخدم دعوة العمل النهائية في خاتمة المقال مع زر أو رابط واضح للإجراء المطلوب.</li>
+                                <li>اختبر عدة أنواع من دعوات العمل لمعرفة أيها أكثر فعالية مع جمهورك المستهدف.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var clipboard = new ClipboardJS('.copy-btn');
+        
+        clipboard.on('success', function(e) {
+            var btn = e.trigger;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> تم النسخ';
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-success');
+            
+            setTimeout(function() {
+                btn.innerHTML = '<i class="fas fa-copy me-1"></i> نسخ';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-primary');
+            }, 2000);
+            
+            e.clearSelection();
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

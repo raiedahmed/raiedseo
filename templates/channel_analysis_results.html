@@ -1,0 +1,642 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحليل أداء القناة{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> نتائج تحليل أداء القناة</h1>
+    <p class="section-description">تحليل أداء قناة: {{ results.channel_name }}</p>
+</div>
+
+<div class="channel-analysis-results">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> ملخص أداء القناة</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="channel-stats">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon bg-danger">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div class="stat-details">
+                                                <h3>{{ results.channel_stats.subscribers }}</h3>
+                                                <p>المشتركين</p>
+                                                <span class="stat-trend">
+                                                    <i class="fas fa-arrow-up"></i> {{ results.channel_stats.subscribers_growth }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon bg-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </div>
+                                            <div class="stat-details">
+                                                <h3>{{ results.channel_stats.total_views }}</h3>
+                                                <p>إجمالي المشاهدات</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon bg-success">
+                                                <i class="fas fa-video"></i>
+                                            </div>
+                                            <div class="stat-details">
+                                                <h3>{{ results.channel_stats.total_videos }}</h3>
+                                                <p>عدد الفيديوهات</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="stat-card-secondary">
+                                            <div class="stat-icon-secondary">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <div class="stat-details-secondary">
+                                                <h4>{{ results.channel_stats.avg_views_per_video }}</h4>
+                                                <p>متوسط المشاهدات لكل فيديو</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="stat-card-secondary">
+                                            <div class="stat-icon-secondary">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                            <div class="stat-details-secondary">
+                                                <h4>{{ results.period }} يوم</h4>
+                                                <p>فترة التحليل</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="seo-score-widget">
+                                <div class="score-circle" data-score="{{ results.seo_score }}">
+                                    <div class="score-circle-inner">
+                                        <div class="score-value">{{ results.seo_score }}</div>
+                                        <div class="score-label">درجة السيو</div>
+                                    </div>
+                                </div>
+                                <div class="score-description text-center mt-2">
+                                    {% if results.seo_score >= 80 %}
+                                    <span class="badge bg-success">ممتاز</span>
+                                    {% elif results.seo_score >= 60 %}
+                                    <span class="badge bg-warning">جيد</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">يحتاج تحسين</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if results.growth_data %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> تطور أداء القناة</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="growth-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if results.video_performance %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-play-circle"></i> أداء الفيديوهات</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>العنوان</th>
+                                    <th>المشاهدات</th>
+                                    <th>وقت المشاهدة (دقائق)</th>
+                                    <th>نسبة الاحتفاظ</th>
+                                    <th>معدل النقر للظهور</th>
+                                    <th>نسبة التفاعل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for video in results.video_performance %}
+                                <tr>
+                                    <td>{{ video.title }}</td>
+                                    <td>{{ video.views }}</td>
+                                    <td>{{ video.watch_time }}</td>
+                                    <td>{{ video.retention }}%</td>
+                                    <td>{{ video.ctr }}%</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {{ 'bg-success' if video.engagement_rate > 5 else ('bg-warning' if video.engagement_rate > 2 else 'bg-danger') }}" 
+                                                role="progressbar" 
+                                                style="width: {{ video.engagement_rate * 5 }}%"
+                                                aria-valuenow="{{ video.engagement_rate }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="20">
+                                                {{ video.engagement_rate }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if results.keyword_analysis %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> تحليل الكلمات المفتاحية</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>الكلمة المفتاحية</th>
+                                            <th>الظهور</th>
+                                            <th>المشاهدات</th>
+                                            <th>معدل النقر للظهور</th>
+                                            <th>متوسط وقت المشاهدة</th>
+                                            <th>الفيديوهات في الترتيب</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for keyword in results.keyword_analysis %}
+                                        <tr>
+                                            <td><strong>{{ keyword.keyword }}</strong></td>
+                                            <td>{{ keyword.impressions }}</td>
+                                            <td>{{ keyword.views }}</td>
+                                            <td>{{ keyword.ctr }}%</td>
+                                            <td>{{ keyword.avg_view_duration }} دقائق</td>
+                                            <td>{{ keyword.videos_ranking }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="keywords-insights">
+                                <h3>رؤى الكلمات المفتاحية:</h3>
+                                <p>استناداً إلى تحليل الكلمات المفتاحية لقناتك، نوصي بالتركيز على:</p>
+                                <ul>
+                                    {% if results.keyword_analysis|length > 0 %}
+                                    <li>استخدام <strong>{{ results.keyword_analysis[0].keyword }}</strong> في المزيد من الفيديوهات</li>
+                                    {% endif %}
+                                    {% if results.keyword_analysis|length > 1 %}
+                                    <li>تحسين معدل النقر للظهور لكلمة <strong>{{ results.keyword_analysis[1].keyword }}</strong></li>
+                                    {% endif %}
+                                    <li>إنشاء محتوى أطول لزيادة وقت المشاهدة</li>
+                                    <li>استخدام الكلمات المفتاحية في بداية عناوين الفيديوهات</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> توصيات لتحسين سيو القناة</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="recommendations-list">
+                                {% for recommendation in results.seo_recommendations %}
+                                <div class="recommendation-item">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="recommendation-content">
+                                        <p>{{ recommendation }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="action-plan">
+                                <h3>خطة عمل لـ {{ results.period }} يوم القادمة:</h3>
+                                <ol>
+                                    <li>إنشاء {{ [3, 5, 8]|random }} فيديوهات تستهدف الكلمات المفتاحية الرئيسية</li>
+                                    <li>تحسين عناوين وأوصاف الفيديوهات الحالية</li>
+                                    <li>تنظيم الفيديوهات في قوائم تشغيل مخصصة</li>
+                                    <li>تحسين الصور المصغرة لزيادة معدل النقر</li>
+                                    <li>زيادة التفاعل مع المشاهدين في التعليقات</li>
+                                </ol>
+                                <div class="text-center mt-4">
+                                    <a href="#" class="btn btn-primary" id="generate-pdf">
+                                        <i class="fas fa-file-pdf"></i> تصدير كملف PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_keywords') }}" class="action-button">
+                    <i class="fas fa-key"></i>
+                    <span>تحليل الكلمات المفتاحية</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_competitor') }}" class="action-button">
+                    <i class="fas fa-users"></i>
+                    <span>تحليل المنافسين</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_seo') }}" class="action-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>العودة إلى أدوات سيو اليوتيوب</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .channel-stats {
+        margin-top: 15px;
+    }
+    
+    .stat-card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 24px;
+    }
+    
+    .stat-details h3 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .stat-details p {
+        margin: 0;
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .stat-trend {
+        font-size: 12px;
+        color: #28a745;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .stat-card-secondary {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .stat-icon-secondary {
+        width: 40px;
+        height: 40px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        color: #495057;
+        font-size: 16px;
+    }
+    
+    .stat-details-secondary h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .stat-details-secondary p {
+        margin: 0;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .seo-score-widget {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+    
+    .score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .score-circle::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(
+            var(--score-color) calc(var(--score) * 1%),
+            #e9ecef calc(var(--score) * 1%)
+        );
+    }
+    
+    .score-circle-inner {
+        width: 120px;
+        height: 120px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .score-value {
+        font-size: 36px;
+        font-weight: bold;
+        color: var(--score-color);
+        line-height: 1;
+    }
+    
+    .score-label {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .recommendations-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .recommendation-item {
+        display: flex;
+        align-items: flex-start;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .recommendation-icon {
+        color: #28a745;
+        font-size: 20px;
+        margin-right: 15px;
+        padding-top: 2px;
+    }
+    
+    .recommendation-content p {
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .action-plan {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .action-plan h3 {
+        margin-bottom: 15px;
+        font-size: 18px;
+        color: #3498db;
+    }
+    
+    .action-plan ol {
+        padding-left: 20px;
+    }
+    
+    .action-plan li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .keywords-insights {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .keywords-insights h3 {
+        margin-bottom: 15px;
+        font-size: 18px;
+        color: #3498db;
+    }
+    
+    .keywords-insights ul {
+        padding-left: 20px;
+    }
+    
+    .keywords-insights li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+</style>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة لون درجة السيو
+        const scoreCircles = document.querySelectorAll('.score-circle');
+        scoreCircles.forEach(circle => {
+            const score = parseInt(circle.getAttribute('data-score'));
+            let scoreColor;
+            
+            if (score >= 80) {
+                scoreColor = '#28a745'; // أخضر
+            } else if (score >= 60) {
+                scoreColor = '#ffc107'; // أصفر
+            } else {
+                scoreColor = '#dc3545'; // أحمر
+            }
+            
+            circle.style.setProperty('--score', score);
+            circle.style.setProperty('--score-color', scoreColor);
+        });
+        
+        {% if results.growth_data %}
+        // رسم بياني لتطور أداء القناة
+        const growthCtx = document.getElementById('growth-chart').getContext('2d');
+        
+        // استخراج البيانات من نتائج التحليل
+        const dates = {{ results.growth_data|map(attribute='date')|list|tojson }};
+        const views = {{ results.growth_data|map(attribute='views')|list|tojson }};
+        const subscribers = {{ results.growth_data|map(attribute='subscribers')|list|tojson }};
+        
+        const growthChart = new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'المشاهدات',
+                        data: views,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'المشتركين الجدد',
+                        data: subscribers,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        yAxisID: 'y2'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'التاريخ'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'المشاهدات'
+                        }
+                    },
+                    y2: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'المشتركين الجدد'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        // زر إنشاء ملف PDF
+        document.getElementById('generate-pdf').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('سيتم تنفيذ تصدير التقرير كملف PDF...');
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,440 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحسين محتوى الفيديو{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> نتائج تحسين محتوى الفيديو</h1>
+    <p class="section-description">تحسين عنوان ووصف الفيديو لموضوع: {{ results.topic }}</p>
+</div>
+
+<div class="video-content-results">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> ملخص التحليل</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>معلومات المحتوى:</h3>
+                            <ul class="analysis-info">
+                                <li><strong>الموضوع:</strong> {{ results.topic }}</li>
+                                <li><strong>الكلمات المفتاحية المستهدفة:</strong> 
+                                    {% if results.target_keywords %}
+                                        {{ results.target_keywords|join(', ') }}
+                                    {% else %}
+                                        <span class="text-muted">لم يتم تحديد كلمات مفتاحية</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                            
+                            {% if results.title_analysis %}
+                            <div class="current-content-analysis mt-4">
+                                <h4>تحليل العنوان الحالي:</h4>
+                                <div class="analysis-metrics">
+                                    <div class="metric-item {{ 'good' if results.title_analysis.length <= 60 else 'warning' }}">
+                                        <div class="metric-name">الطول:</div>
+                                        <div class="metric-value">{{ results.title_analysis.length }} حرف</div>
+                                        <div class="metric-status">
+                                            {% if results.title_analysis.length <= 60 %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.title_analysis.keywords_included > 0 else 'bad' }}">
+                                        <div class="metric-name">الكلمات المفتاحية:</div>
+                                        <div class="metric-value">{{ results.title_analysis.keywords_included }} من {{ results.target_keywords|length }}</div>
+                                        <div class="metric-status">
+                                            {% if results.title_analysis.keywords_included > 0 %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon bad"><i class="fas fa-times-circle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.title_analysis.has_numbers else 'warning' }}">
+                                        <div class="metric-name">أرقام:</div>
+                                        <div class="metric-value">{{ 'متوفر' if results.title_analysis.has_numbers else 'غير متوفر' }}</div>
+                                        <div class="metric-status">
+                                            {% if results.title_analysis.has_numbers %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.title_analysis.has_emotion else 'warning' }}">
+                                        <div class="metric-name">عاطفة:</div>
+                                        <div class="metric-value">{{ 'متوفر' if results.title_analysis.has_emotion else 'غير متوفر' }}</div>
+                                        <div class="metric-status">
+                                            {% if results.title_analysis.has_emotion %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if results.description_analysis %}
+                            <div class="current-content-analysis mt-4">
+                                <h4>تحليل الوصف الحالي:</h4>
+                                <div class="analysis-metrics">
+                                    <div class="metric-item {{ 'good' if results.description_analysis.length >= 250 else 'warning' }}">
+                                        <div class="metric-name">الطول:</div>
+                                        <div class="metric-value">{{ results.description_analysis.length }} حرف</div>
+                                        <div class="metric-status">
+                                            {% if results.description_analysis.length >= 250 %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.description_analysis.keywords_included > 0 else 'bad' }}">
+                                        <div class="metric-name">الكلمات المفتاحية:</div>
+                                        <div class="metric-value">{{ results.description_analysis.keywords_included }} من {{ results.target_keywords|length }}</div>
+                                        <div class="metric-status">
+                                            {% if results.description_analysis.keywords_included > 0 %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon bad"><i class="fas fa-times-circle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.description_analysis.has_timestamps else 'warning' }}">
+                                        <div class="metric-name">فهرس زمني:</div>
+                                        <div class="metric-value">{{ 'متوفر' if results.description_analysis.has_timestamps else 'غير متوفر' }}</div>
+                                        <div class="metric-status">
+                                            {% if results.description_analysis.has_timestamps %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.description_analysis.has_links else 'warning' }}">
+                                        <div class="metric-name">روابط:</div>
+                                        <div class="metric-value">{{ 'متوفر' if results.description_analysis.has_links else 'غير متوفر' }}</div>
+                                        <div class="metric-status">
+                                            {% if results.description_analysis.has_links %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item {{ 'good' if results.description_analysis.has_hashtags else 'warning' }}">
+                                        <div class="metric-name">هاشتاج:</div>
+                                        <div class="metric-value">{{ 'متوفر' if results.description_analysis.has_hashtags else 'غير متوفر' }}</div>
+                                        <div class="metric-status">
+                                            {% if results.description_analysis.has_hashtags %}
+                                            <span class="status-icon good"><i class="fas fa-check-circle"></i></span>
+                                            {% else %}
+                                            <span class="status-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <div class="optimization-score">
+                                <div class="score-circle">
+                                    {% if results.title_analysis %}
+                                        <span class="score-value">{{ results.title_analysis.improvement_score }}</span>
+                                    {% else %}
+                                        <span class="score-value">-</span>
+                                    {% endif %}
+                                    <span class="score-label">درجة التحسين</span>
+                                </div>
+                                <p class="mt-2">
+                                    {% if results.title_analysis and results.title_analysis.improvement_score < 50 %}
+                                        يحتاج المحتوى إلى تحسينات كبيرة
+                                    {% elif results.title_analysis and results.title_analysis.improvement_score < 70 %}
+                                        يحتاج المحتوى إلى بعض التحسينات
+                                    {% elif results.title_analysis %}
+                                        المحتوى جيد، مع إمكانية التحسين
+                                    {% else %}
+                                        لا يوجد محتوى حالي للتقييم
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-heading"></i> العناوين المحسنة المقترحة</h2>
+                </div>
+                <div class="card-body">
+                    <p>اختر أحد العناوين المقترحة التالية لتحسين ظهور الفيديو في نتائج البحث:</p>
+                    
+                    <div class="suggested-titles">
+                        {% for title in results.improved_titles %}
+                        <div class="suggested-title-item">
+                            <div class="title-text">{{ title }}</div>
+                            <div class="title-actions">
+                                <button class="btn btn-sm btn-outline-primary copy-btn" data-content="{{ title }}">
+                                    <i class="fas fa-copy"></i> نسخ
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-align-left"></i> الوصف المحسن المقترح</h2>
+                </div>
+                <div class="card-body">
+                    <p>استخدم الوصف المقترح التالي لتحسين ظهور الفيديو في نتائج البحث:</p>
+                    
+                    <div class="suggested-description">
+                        <div class="description-content">
+                            <pre>{{ results.improved_description }}</pre>
+                        </div>
+                        <div class="description-actions text-center mt-3">
+                            <button class="btn btn-primary copy-btn" data-content="{{ results.improved_description }}">
+                                <i class="fas fa-copy"></i> نسخ الوصف كاملاً
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> نصائح إضافية لتحسين محتوى الفيديو</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <ul class="seo-tips">
+                                {% for tip in results.seo_tips %}
+                                <li><i class="fas fa-check-circle text-success"></i> {{ tip }}</li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <div class="alert alert-info mt-4">
+                                <h4><i class="fas fa-info-circle"></i> هل تعلم؟</h4>
+                                <p>الفيديوهات التي تحتوي على كلمات مفتاحية في العنوان والوصف تحصل على مشاهدات أكثر بنسبة 40% من الفيديوهات التي لا تحتوي عليها.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_keywords') }}" class="action-button">
+                    <i class="fas fa-key"></i>
+                    <span>تحليل الكلمات المفتاحية</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('video_ranking') }}" class="action-button">
+                    <i class="fas fa-chart-line"></i>
+                    <span>تحليل تصنيف الفيديو</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_seo') }}" class="action-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>العودة إلى أدوات سيو اليوتيوب</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .analysis-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .metric-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        min-width: 200px;
+    }
+    
+    .metric-item.good {
+        border-left: 4px solid #28a745;
+    }
+    
+    .metric-item.warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .metric-item.bad {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .metric-name {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    .metric-value {
+        margin-right: auto;
+    }
+    
+    .status-icon {
+        font-size: 18px;
+    }
+    
+    .status-icon.good {
+        color: #28a745;
+    }
+    
+    .status-icon.warning {
+        color: #ffc107;
+    }
+    
+    .status-icon.bad {
+        color: #dc3545;
+    }
+    
+    .optimization-score {
+        margin-top: 20px;
+    }
+    
+    .score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 10px solid #3498db;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .score-value {
+        font-size: 36px;
+        font-weight: bold;
+        color: #3498db;
+    }
+    
+    .score-label {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .suggested-titles {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .suggested-title-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+    }
+    
+    .title-text {
+        flex-grow: 1;
+        font-weight: bold;
+    }
+    
+    .suggested-description {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #3498db;
+    }
+    
+    .description-content {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .description-content pre {
+        white-space: pre-wrap;
+        font-family: inherit;
+        margin: 0;
+    }
+    
+    .seo-tips li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // نسخ المحتوى إلى الحافظة
+        const copyButtons = document.querySelectorAll('.copy-btn');
+        
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const content = this.getAttribute('data-content');
+                const textArea = document.createElement('textarea');
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // تغيير نص الزر بعد النسخ
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+                
+                // إعادة النص الأصلي بعد ثانيتين
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    });
+</script>
+{% endblock %}

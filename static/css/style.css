@@ -181,6 +181,46 @@ body {
     display: none;
 }
 
+/* عناوين أقسام القائمة الجانبية */
+.sidebar-menu .menu-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: none;
+}
+
+.sidebar-menu .menu-header:first-child {
+    margin-top: 0;
+}
+
+.sidebar-menu .menu-header span {
+    position: relative;
+    display: inline-block;
+}
+
+.sidebar-menu .menu-header span:after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: 0;
+    width: 30px;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.sidebar-collapsed .sidebar-menu .menu-header {
+    text-align: center;
+    padding: var(--spacing-md) 0;
+}
+
+.sidebar-collapsed .sidebar-menu .menu-header span {
+    display: none;
+}
+
 /* شريط التنقل */
 .navbar {
     background-color: white;

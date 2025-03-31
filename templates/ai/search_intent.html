@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}كاشف نية البحث - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">كاشف نية البحث</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">هذه الأداة تساعدك في تحديد نية المستخدم من الكلمات المفتاحية (معلوماتية، تجارية، ملاحية، شرائية)</p>
+                    
+                    <form method="post" action="{{ url_for('analyze_search_intent') }}">
+                        <div class="form-group mb-3">
+                            <label for="keywords">أدخل الكلمات المفتاحية (كلمة واحدة في كل سطر)</label>
+                            <textarea class="form-control" id="keywords" name="keywords" rows="7" required></textarea>
+                            <small class="form-text text-muted">مثال: شراء حذاء رياضي، كيف اصنع موقع الكتروني، سعر الهاتف الجديد</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تحليل نية البحث</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

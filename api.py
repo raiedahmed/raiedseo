@@ -30,6 +30,10 @@ from modules.wp_integration import WordPressIntegration
 from modules.competitor_analyzer import CompetitorAnalyzer
 from modules.keyword_analyzer import KeywordAnalyzer
 from modules.ai_content_generator import AIContentGenerator
+from modules.core_web_vitals import CoreWebVitalsAnalyzer
+from modules.eeat_analyzer import EEATAnalyzer
+from modules.schema_analyzer import SchemaAnalyzer
+from modules.parallel_crawler import AsyncWebCrawler
 
 # استيراد الأدوات المساعدة
 from utils.helpers import validate_url, create_directory, format_time
@@ -78,19 +82,32 @@ def analyze_website_job(job_id, url, options):
         
         # تهيئة الزاحف
         single_page = options.get('single_page', False)
-        max_pages = 1 if single_page else config.get('crawling', {}).get('max_pages', 100)
+        max_pages = 1 if single_page else options.get('max_pages', config.get('crawling', {}).get('max_pages', 100))
         depth = options.get('depth', 3)
         delay = config.get('crawling', {}).get('delay_seconds', 1)
         respect_robots = config.get('crawling', {}).get('respect_robots_txt', True)
         
-        crawler = WebCrawler(
-            start_url=url,
-            max_pages=max_pages,
-            max_depth=depth,
-            delay=delay,
-            respect_robots_txt=respect_robots,
-            verbose=True
-        )
+        # استخدام الزاحف المتوازي إذا تم تفعيله
+        use_parallel = options.get('use_parallel', False)
+        if use_parallel:
+            crawler = AsyncWebCrawler(
+                start_url=url,
+                max_pages=max_pages,
+                max_depth=depth,
+                delay=delay,
+                respect_robots_txt=respect_robots,
+                max_concurrent=options.get('max_concurrent', 10),
+                verbose=True
+            )
+        else:
+            crawler = WebCrawler(
+                start_url=url,
+                max_pages=max_pages,
+                max_depth=depth,
+                delay=delay,
+                respect_robots_txt=respect_robots,
+                verbose=True
+            )
         
         # بدء الزحف
         pages = crawler.crawl()
@@ -110,6 +127,11 @@ def analyze_website_job(job_id, url, options):
         content_analyzer = ContentAnalyzer()
         image_optimizer = ImageOptimizer()
         link_checker = LinkChecker()
+        
+        # المحللات الجديدة
+        core_web_vitals_analyzer = CoreWebVitalsAnalyzer(config=config)
+        eeat_analyzer = EEATAnalyzer(config=config)
+        schema_analyzer = SchemaAnalyzer(config=config)
         
         # ميزات متقدمة
         keyword_analyzer = KeywordAnalyzer()
@@ -162,6 +184,27 @@ def analyze_website_job(job_id, url, options):
                     page_result['keywords'] = keyword_analyzer.analyze(page_data)
                 except Exception as e:
                     logger.warning(f"فشل تحليل الكلمات المفتاحية للصفحة {page_url}: {str(e)}")
+                
+                # تحليل Core Web Vitals
+                if options.get('analyze_core_web_vitals', True):
+                    try:
+                        page_result['core_web_vitals'] = core_web_vitals_analyzer.analyze(page_url)
+                    except Exception as e:
+                        logger.warning(f"فشل تحليل Core Web Vitals للصفحة {page_url}: {str(e)}")
+                
+                # تحليل E-E-A-T
+                if options.get('analyze_eeat', True):
+                    try:
+                        page_result['eeat'] = eeat_analyzer.analyze(page_url, page_data.get('html'))
+                    except Exception as e:
+                        logger.warning(f"فشل تحليل E-E-A-T للصفحة {page_url}: {str(e)}")
+                
+                # تحليل Schema Markup
+                if options.get('analyze_schema', True):
+                    try:
+                        page_result['schema'] = schema_analyzer.analyze(page_url, page_data.get('html'))
+                    except Exception as e:
+                        logger.warning(f"فشل تحليل Schema Markup للصفحة {page_url}: {str(e)}")
                 
                 # إضافة النتائج
                 results[page_url] = page_result
@@ -332,7 +375,12 @@ def analyze():
         'auto_fix': request.json.get('auto_fix', False),
         'output_dir': 'results',
         'wp_api': request.json.get('wp_api', False),
-        'competitor_domains': request.json.get('competitor_domains', [])
+        'competitor_domains': request.json.get('competitor_domains', []),
+        'use_parallel': request.json.get('use_parallel', False),
+        'max_concurrent': request.json.get('max_concurrent', 10),
+        'analyze_core_web_vitals': request.json.get('analyze_core_web_vitals', True),
+        'analyze_eeat': request.json.get('analyze_eeat', True),
+        'analyze_schema': request.json.get('analyze_schema', True)
     }
     
     # إضافة بيانات WordPress إذا تم تحديدها
@@ -528,3 +576,189 @@ def analyze_keywords():
     
     except Exception as e:
         return jsonify({"msg": f"Error analyzing keywords: {str(e)}"}), 500
+
+@api.route('/api/v1/core-web-vitals', methods=['POST'])
+@jwt_required()
+def analyze_core_web_vitals():
+    """تحليل مؤشرات Core Web Vitals لصفحة واحدة"""
+    data = request.get_json()
+    
+    if not data or 'url' not in data:
+        return jsonify({'error': 'يجب تحديد URL للتحليل'}), 400
+    
+    url = data['url']
+    
+    if not validate_url(url):
+        return jsonify({'error': 'رابط URL غير صالح'}), 400
+    
+    try:
+        analyzer = CoreWebVitalsAnalyzer(config=config)
+        results = analyzer.analyze(url, use_lighthouse=data.get('use_lighthouse', True))
+        
+        return jsonify({
+            'status': 'success',
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f"خطأ في تحليل Core Web Vitals: {str(e)}")
+        return jsonify({'error': f'فشل التحليل: {str(e)}'}), 500
+
+@api.route('/api/v1/eeat', methods=['POST'])
+@jwt_required()
+def analyze_eeat():
+    """تحليل عوامل E-E-A-T للصفحة"""
+    data = request.get_json()
+    
+    if not data or 'url' not in data:
+        return jsonify({'error': 'يجب تحديد URL للتحليل'}), 400
+    
+    url = data['url']
+    
+    if not validate_url(url):
+        return jsonify({'error': 'رابط URL غير صالح'}), 400
+    
+    try:
+        analyzer = EEATAnalyzer(config=config)
+        results = analyzer.analyze(url)
+        
+        return jsonify({
+            'status': 'success',
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f"خطأ في تحليل E-E-A-T: {str(e)}")
+        return jsonify({'error': f'فشل التحليل: {str(e)}'}), 500
+
+@api.route('/api/v1/schema', methods=['POST'])
+@jwt_required()
+def analyze_schema():
+    """تحليل البيانات المنظمة (Schema Markup) للصفحة"""
+    data = request.get_json()
+    
+    if not data or 'url' not in data:
+        return jsonify({'error': 'يجب تحديد URL للتحليل'}), 400
+    
+    url = data['url']
+    
+    if not validate_url(url):
+        return jsonify({'error': 'رابط URL غير صالح'}), 400
+    
+    try:
+        analyzer = SchemaAnalyzer(config=config)
+        results = analyzer.analyze(url)
+        
+        return jsonify({
+            'status': 'success',
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f"خطأ في تحليل Schema Markup: {str(e)}")
+        return jsonify({'error': f'فشل التحليل: {str(e)}'}), 500
+
+@api.route('/api/v1/developer/documentation', methods=['GET'])
+def api_documentation():
+    """الحصول على توثيق API"""
+    base_url = request.host_url.rstrip('/')
+    
+    docs = {
+        'api_version': 'v1',
+        'description': 'واجهة برمجة تطبيقات RSEO لتحليل وتحسين السيو',
+        'base_url': f'{base_url}/api/v1',
+        'authentication': {
+            'type': 'Bearer Token',
+            'login_url': f'{base_url}/api/v1/login',
+            'parameters': {
+                'username': 'اسم المستخدم',
+                'password': 'كلمة المرور'
+            }
+        },
+        'endpoints': [
+            {
+                'path': '/analyze',
+                'method': 'POST',
+                'description': 'تحليل موقع ويب كامل',
+                'parameters': {
+                    'url': 'عنوان URL للموقع (مطلوب)',
+                    'single_page': 'تحليل صفحة واحدة فقط (اختياري، افتراضي: false)',
+                    'depth': 'عمق الزحف (اختياري، افتراضي: 3)',
+                    'use_parallel': 'استخدام الزحف المتوازي (اختياري، افتراضي: false)',
+                    'analyze_core_web_vitals': 'تحليل Core Web Vitals (اختياري، افتراضي: true)',
+                    'analyze_eeat': 'تحليل E-E-A-T (اختياري، افتراضي: true)',
+                    'analyze_schema': 'تحليل Schema Markup (اختياري، افتراضي: true)'
+                }
+            },
+            {
+                'path': '/core-web-vitals',
+                'method': 'POST',
+                'description': 'تحليل مؤشرات Core Web Vitals لصفحة واحدة',
+                'parameters': {
+                    'url': 'عنوان URL للصفحة (مطلوب)',
+                    'use_lighthouse': 'استخدام Lighthouse للتحليل (اختياري، افتراضي: true)'
+                }
+            },
+            {
+                'path': '/eeat',
+                'method': 'POST',
+                'description': 'تحليل عوامل E-E-A-T للصفحة',
+                'parameters': {
+                    'url': 'عنوان URL للصفحة (مطلوب)'
+                }
+            },
+            {
+                'path': '/schema',
+                'method': 'POST',
+                'description': 'تحليل البيانات المنظمة (Schema Markup) للصفحة',
+                'parameters': {
+                    'url': 'عنوان URL للصفحة (مطلوب)'
+                }
+            },
+            {
+                'path': '/job/{job_id}',
+                'method': 'GET',
+                'description': 'الحصول على حالة مهمة تحليل'
+            },
+            {
+                'path': '/reports',
+                'method': 'GET',
+                'description': 'الحصول على قائمة بالتقارير المتاحة'
+            },
+            {
+                'path': '/report/{report_id}',
+                'method': 'GET',
+                'description': 'الحصول على تقرير محدد'
+            },
+            {
+                'path': '/keywords',
+                'method': 'POST',
+                'description': 'تحليل الكلمات المفتاحية',
+                'parameters': {
+                    'keywords': 'قائمة بالكلمات المفتاحية (مطلوب)',
+                    'language': 'لغة البحث (اختياري، افتراضي: ar)'
+                }
+            },
+            {
+                'path': '/competitor/{domain}',
+                'method': 'GET',
+                'description': 'تحليل موقع منافس',
+                'parameters': {
+                    'domain': 'نطاق المنافس (مطلوب)'
+                }
+            },
+            {
+                'path': '/content/generate',
+                'method': 'POST',
+                'description': 'توليد محتوى باستخدام الذكاء الاصطناعي',
+                'parameters': {
+                    'topic': 'موضوع المحتوى (مطلوب)',
+                    'keywords': 'الكلمات المفتاحية (اختياري)',
+                    'length': 'طول المحتوى (اختياري، افتراضي: medium)',
+                    'language': 'لغة المحتوى (اختياري، افتراضي: ar)'
+                }
+            }
+        ]
+    }
+    
+    return jsonify(docs)

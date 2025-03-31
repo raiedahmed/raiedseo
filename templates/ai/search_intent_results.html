@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}نتائج تحليل نية البحث - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">نتائج تحليل نية البحث</h5>
+                    <a href="{{ url_for('analyze_search_intent') }}" class="btn btn-light btn-sm">تحليل جديد</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">الكلمة المفتاحية</th>
+                                    <th scope="col">نية البحث</th>
+                                    <th scope="col">نسبة الثقة</th>
+                                    <th scope="col">تفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>{{ result.keyword }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if result.intent == 'informational' %}bg-info{% endif %}
+                                            {% if result.intent == 'navigational' %}bg-success{% endif %}
+                                            {% if result.intent == 'commercial' %}bg-warning{% endif %}
+                                            {% if result.intent == 'transactional' %}bg-danger{% endif %}
+                                        ">
+                                            {% if result.intent == 'informational' %}معلوماتية{% endif %}
+                                            {% if result.intent == 'navigational' %}ملاحية{% endif %}
+                                            {% if result.intent == 'commercial' %}تجارية{% endif %}
+                                            {% if result.intent == 'transactional' %}شرائية{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ (result.confidence * 100)|round|int }}%</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#detailsModal{{ loop.index }}">
+                                            عرض التفاصيل
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- تفاصيل نية البحث -->
+    {% for result in results %}
+    <div class="modal fade" id="detailsModal{{ loop.index }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ loop.index }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel{{ loop.index }}">تفاصيل نية البحث لـ "{{ result.keyword }}"</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>نوع نية البحث: 
+                        <span class="badge 
+                            {% if result.intent == 'informational' %}bg-info{% endif %}
+                            {% if result.intent == 'navigational' %}bg-success{% endif %}
+                            {% if result.intent == 'commercial' %}bg-warning{% endif %}
+                            {% if result.intent == 'transactional' %}bg-danger{% endif %}
+                        ">
+                            {% if result.intent == 'informational' %}معلوماتية{% endif %}
+                            {% if result.intent == 'navigational' %}ملاحية{% endif %}
+                            {% if result.intent == 'commercial' %}تجارية{% endif %}
+                            {% if result.intent == 'transactional' %}شرائية{% endif %}
+                        </span>
+                    </h6>
+                    <p>نسبة الثقة: {{ (result.confidence * 100)|round|int }}%</p>
+                    
+                    <h6 class="mt-4">السمات المكتشفة:</h6>
+                    <ul class="list-group">
+                        {% for feature, value in result.features.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {% if feature == 'question_words' %}كلمات استفهام{% endif %}
+                            {% if feature == 'action_verbs' %}أفعال تدل على عمل{% endif %}
+                            {% if feature == 'commercial_terms' %}مصطلحات تجارية{% endif %}
+                            {% if feature == 'branded_terms' %}علامات تجارية{% endif %}
+                            {% if feature == 'location_terms' %}مصطلحات الموقع{% endif %}
+                            {% if feature == 'comparison_terms' %}مصطلحات المقارنة{% endif %}
+                            {% if feature == 'price_terms' %}مصطلحات السعر{% endif %}
+                            {% if feature == 'purchase_terms' %}مصطلحات الشراء{% endif %}
+                            {% if feature == 'word_count' %}عدد الكلمات{% endif %}
+                            <span class="badge bg-primary rounded-pill">{{ value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h6>توصيات لتحسين المحتوى:</h6>
+                        <ul>
+                            {% if result.intent == 'informational' %}
+                            <li>التركيز على تقديم معلومات شاملة وموثوقة</li>
+                            <li>استخدام الرسوم البيانية والصور التوضيحية</li>
+                            <li>الإجابة على الأسئلة الأكثر شيوعًا المتعلقة بالموضوع</li>
+                            {% elif result.intent == 'navigational' %}
+                            <li>التأكد من سهولة الوصول إلى الصفحات الرئيسية</li>
+                            <li>تحسين تجربة المستخدم والتنقل في الموقع</li>
+                            <li>استخدام هيكل واضح للموقع مع روابط داخلية فعالة</li>
+                            {% elif result.intent == 'commercial' %}
+                            <li>تقديم معلومات مفصلة عن المنتجات والخدمات</li>
+                            <li>إضافة مقارنات بين المنتجات والبدائل</li>
+                            <li>تسليط الضوء على مزايا المنتجات والقيمة المضافة</li>
+                            {% elif result.intent == 'transactional' %}
+                            <li>تسهيل عملية الشراء والتحويل</li>
+                            <li>تقديم عروض وخصومات جذابة</li>
+                            <li>عرض شهادات العملاء والتقييمات</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+</div>
+{% endblock %}

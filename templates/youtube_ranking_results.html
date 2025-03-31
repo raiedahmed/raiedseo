@@ -1,0 +1,287 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحليل تصنيف الفيديو{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> نتائج تحليل تصنيف الفيديو</h1>
+    <p class="section-description">تحليل تصنيف فيديو في نتائج البحث على اليوتيوب</p>
+</div>
+
+<div class="video-ranking-results">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-play-circle"></i> معلومات الفيديو</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/{{ results.video_id }}" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h3>{{ results.title }}</h3>
+                            <p><strong>القناة:</strong> {{ results.channel }}</p>
+                            <div class="video-stats">
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-eye"></i>
+                                    </div>
+                                    <div class="stat-details">
+                                        <h4>{{ results.views }}</h4>
+                                        <p>المشاهدات</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-thumbs-up"></i>
+                                    </div>
+                                    <div class="stat-details">
+                                        <h4>{{ results.likes }}</h4>
+                                        <p>الإعجابات</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <div class="stat-details">
+                                        <h4>{{ results.comments }}</h4>
+                                        <p>التعليقات</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="stat-details">
+                                        <h4>{{ results.estimated_traffic }}</h4>
+                                        <p>حركة المرور التقديرية</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="seo-score mt-3">
+                                <h4>درجة تحسين السيو: <strong>{{ results.seo_score }}/100</strong></h4>
+                                <div class="progress">
+                                    <div class="progress-bar {% if results.seo_score >= 80 %}bg-success{% elif results.seo_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                        role="progressbar" 
+                                        style="width: {{ results.seo_score }}%;"
+                                        aria-valuenow="{{ results.seo_score }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        {{ results.seo_score }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-search"></i> تصنيف الكلمات المفتاحية</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الكلمة المفتاحية</th>
+                                    <th>المركز الحالي</th>
+                                    <th>المركز (قبل ٣٠ يوم)</th>
+                                    <th>التغيير</th>
+                                    <th>حجم البحث</th>
+                                    <th>في العنوان</th>
+                                    <th>في الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for keyword in results.keywords %}
+                                <tr>
+                                    <td><strong>{{ keyword.keyword }}</strong></td>
+                                    <td>
+                                        <span class="position-badge {{ 'top-position' if keyword.position <= 10 else '' }}">
+                                            {{ keyword.position }}
+                                        </span>
+                                    </td>
+                                    <td>{{ keyword.position_30d_ago }}</td>
+                                    <td>
+                                        {% if keyword.position_change > 0 %}
+                                        <span class="text-success"><i class="fas fa-arrow-up"></i> {{ keyword.position_change }}</span>
+                                        {% elif keyword.position_change < 0 %}
+                                        <span class="text-danger"><i class="fas fa-arrow-down"></i> {{ keyword.position_change|abs }}</span>
+                                        {% else %}
+                                        <span class="text-muted"><i class="fas fa-equals"></i> {{ keyword.position_change }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ keyword.search_volume }}</td>
+                                    <td>
+                                        {% if keyword.in_title %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if keyword.in_description %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i></span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-lightbulb"></i> نصائح لتحسين التصنيف</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="improvement-tips">
+                        {% for tip in results.improvement_tips %}
+                        <li><i class="fas fa-check-circle text-success"></i> {{ tip }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> أهم المنافسين</h2>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="competitorsAccordion">
+                        {% for keyword in results.keywords[:3] %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button class="accordion-button {{ 'collapsed' if not loop.first else '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="collapse{{ loop.index }}">
+                                    منافسين لكلمة: <strong>{{ keyword.keyword }}</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {{ 'show' if loop.first else '' }}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#competitorsAccordion">
+                                <div class="accordion-body">
+                                    <ol class="competitor-list">
+                                        {% for competitor in keyword.top_competitors %}
+                                        <li>
+                                            <strong>{{ competitor.title }}</strong> 
+                                            <span class="position-badge">المركز {{ competitor.position }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{{ url_for('video_content') }}" class="action-button">
+                    <i class="fas fa-edit"></i>
+                    <span>تحسين عنوان ووصف الفيديو</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_keywords') }}" class="action-button">
+                    <i class="fas fa-key"></i>
+                    <span>تحليل الكلمات المفتاحية</span>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('youtube_seo') }}" class="action-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>العودة إلى أدوات سيو اليوتيوب</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-stats {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        color: #3498db;
+    }
+    
+    .stat-details h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .stat-details p {
+        margin: 0;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .position-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background-color: #eee;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    
+    .top-position {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .improvement-tips li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .competitor-list li {
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}

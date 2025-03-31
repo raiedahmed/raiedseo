@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block title %}نتائج تقييم المحتوى - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">نتائج تقييم المحتوى</h5>
+                    <a href="{{ url_for('content') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-redo me-1"></i> تقييم محتوى آخر
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <!-- نظرة عامة -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">تم تقييم المحتوى بنجاح</h5>
+                                <p class="mb-0">يحتوي هذا التقرير على تحليل شامل للمحتوى من حيث جودة السيو والقراءة وعوامل E-E-A-T</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- الدرجات الرئيسية -->
+                    <div class="mb-5">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-chart-pie text-primary me-2"></i> الدرجات الرئيسية
+                        </h5>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-3 mb-3">
+                                <div class="score-circle-container">
+                                    <div class="score-circle {{ 'score-excellent' if evaluation.scores.overall_score >= 90 else 'score-good' if evaluation.scores.overall_score >= 70 else 'score-average' if evaluation.scores.overall_score >= 50 else 'score-poor' }}">
+                                        <div class="score-value">{{ evaluation.scores.overall_score }}</div>
+                                        <div class="score-label">الدرجة الكلية</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="score-circle-container">
+                                    <div class="score-circle {{ 'score-excellent' if evaluation.scores.seo_score >= 90 else 'score-good' if evaluation.scores.seo_score >= 70 else 'score-average' if evaluation.scores.seo_score >= 50 else 'score-poor' }}">
+                                        <div class="score-value">{{ evaluation.scores.seo_score }}</div>
+                                        <div class="score-label">درجة السيو</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="score-circle-container">
+                                    <div class="score-circle {{ 'score-excellent' if evaluation.scores.readability_score >= 90 else 'score-good' if evaluation.scores.readability_score >= 70 else 'score-average' if evaluation.scores.readability_score >= 50 else 'score-poor' }}">
+                                        <div class="score-value">{{ evaluation.scores.readability_score }}</div>
+                                        <div class="score-label">سهولة القراءة</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="score-circle-container">
+                                    <div class="score-circle {{ 'score-excellent' if evaluation.scores.eeat_score >= 90 else 'score-good' if evaluation.scores.eeat_score >= 70 else 'score-average' if evaluation.scores.eeat_score >= 50 else 'score-poor' }}">
+                                        <div class="score-value">{{ evaluation.scores.eeat_score }}</div>
+                                        <div class="score-label">E-E-A-T</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- استخدام الكلمات المفتاحية -->
+                    <div class="mb-5">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-key text-primary me-2"></i> تحليل الكلمات المفتاحية
+                        </h5>
+                        
+                        <div class="card bg-light mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">الكلمة المفتاحية الرئيسية: <strong>{{ evaluation.keyword_usage.primary.keyword }}</strong></h6>
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-label me-2">عدد مرات الظهور:</div>
+                                            <div class="stat-value">{{ evaluation.keyword_usage.primary.count }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-label me-2">الكثافة:</div>
+                                            <div class="stat-value">{{ evaluation.keyword_usage.primary.density }}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="recommendation-badge {{ 'badge-good' if 'جيد' in evaluation.keyword_usage.primary.recommendation else 'badge-warning' if 'يجب' in evaluation.keyword_usage.primary.recommendation else 'badge-danger' }}">
+                                            {{ evaluation.keyword_usage.primary.recommendation }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if evaluation.keyword_usage.secondary|default(false) %}
+                        <div class="table-responsive mt-3">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>الكلمة المفتاحية الثانوية</th>
+                                        <th>عدد مرات الظهور</th>
+                                        <th>الكثافة</th>
+                                        <th>التوصية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for keyword in evaluation.keyword_usage.secondary %}
+                                    <tr>
+                                        <td>{{ keyword.keyword }}</td>
+                                        <td>{{ keyword.count }}</td>
+                                        <td>{{ keyword.density }}%</td>
+                                        <td>
+                                            <div class="recommendation-badge {{ 'badge-good' if 'جيد' in keyword.recommendation else 'badge-warning' if 'يجب' in keyword.recommendation else 'badge-danger' }}">
+                                                {{ keyword.recommendation }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- سهولة القراءة -->
+                    <div class="mb-5">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-book-reader text-primary me-2"></i> سهولة القراءة
+                        </h5>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-title">متوسط طول الجملة</div>
+                                    <div class="stat-value">{{ evaluation.readability.avg_sentence_length }} كلمة</div>
+                                    <div class="stat-footer {{ 'text-success' if evaluation.readability.avg_sentence_length <= 20 else 'text-warning' if evaluation.readability.avg_sentence_length <= 25 else 'text-danger' }}">
+                                        {{ 'مثالي (أقل من 20)' if evaluation.readability.avg_sentence_length <= 20 else 'متوسط (20-25)' if evaluation.readability.avg_sentence_length <= 25 else 'طويل (أكثر من 25)' }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-title">متوسط طول الفقرة</div>
+                                    <div class="stat-value">{{ evaluation.readability.avg_paragraph_length }} جملة</div>
+                                    <div class="stat-footer {{ 'text-success' if evaluation.readability.avg_paragraph_length <= 3 else 'text-warning' if evaluation.readability.avg_paragraph_length <= 5 else 'text-danger' }}">
+                                        {{ 'مثالي (أقل من 3)' if evaluation.readability.avg_paragraph_length <= 3 else 'متوسط (3-5)' if evaluation.readability.avg_paragraph_length <= 5 else 'طويل (أكثر من 5)' }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-title">نسبة استخدام المبني للمجهول</div>
+                                    <div class="stat-value">{{ evaluation.readability.passive_voice_percentage }}%</div>
+                                    <div class="stat-footer {{ 'text-success' if evaluation.readability.passive_voice_percentage <= 10 else 'text-warning' if evaluation.readability.passive_voice_percentage <= 20 else 'text-danger' }}">
+                                        {{ 'مثالي (أقل من 10%)' if evaluation.readability.passive_voice_percentage <= 10 else 'متوسط (10-20%)' if evaluation.readability.passive_voice_percentage <= 20 else 'مرتفع (أكثر من 20%)' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">التوصية العامة لسهولة القراءة:</h6>
+                                <p class="mb-0">{{ evaluation.readability.recommendation }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بنية المحتوى -->
+                    <div class="mb-5">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-sitemap text-primary me-2"></i> بنية المحتوى
+                        </h5>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">توزيع العناوين</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="headingsChart" width="100%" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">تقييم البنية</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ evaluation.structure.recommendation }}</p>
+                                        
+                                        <div class="structure-rating mt-3">
+                                            <div class="structure-rating-item">
+                                                <span class="structure-rating-label">تسلسل العناوين:</span>
+                                                <div class="structure-rating-stars">
+                                                    {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {{ 'text-warning' if i <= evaluation.structure.headings_score|default(3) else 'text-muted' }}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="structure-rating-item">
+                                                <span class="structure-rating-label">تقسيم الفقرات:</span>
+                                                <div class="structure-rating-stars">
+                                                    {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {{ 'text-warning' if i <= evaluation.structure.paragraphs_score|default(3) else 'text-muted' }}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="structure-rating-item">
+                                                <span class="structure-rating-label">العناصر المرئية:</span>
+                                                <div class="structure-rating-stars">
+                                                    {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {{ 'text-warning' if i <= evaluation.structure.visual_elements_score|default(3) else 'text-muted' }}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- توصيات التحسين -->
+                    <div class="mb-3">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-lightbulb text-primary me-2"></i> توصيات لتحسين المحتوى
+                        </h5>
+                        
+                        <div class="recommendations-container mt-3">
+                            {% for recommendation in evaluation.recommendations %}
+                            <div class="recommendation-item">
+                                <div class="recommendation-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="recommendation-text">
+                                    {{ recommendation }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تخزين البيانات للرسوم البيانية -->
+<div id="headingData" 
+     data-h1="{{ evaluation.structure.headings.h1|default(0) }}"
+     data-h2="{{ evaluation.structure.headings.h2|default(0) }}"
+     data-h3="{{ evaluation.structure.headings.h3|default(0) }}"
+     data-h4="{{ evaluation.structure.headings.h4|default(0) }}"
+     data-h5="{{ evaluation.structure.headings.h5|default(0) }}"
+     data-h6="{{ evaluation.structure.headings.h6|default(0) }}"
+     style="display: none;"></div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // استخراج البيانات من العنصر المخفي
+    var headingDataElement = document.getElementById('headingData');
+    var h1Count = parseInt(headingDataElement.getAttribute('data-h1')) || 0;
+    var h2Count = parseInt(headingDataElement.getAttribute('data-h2')) || 0;
+    var h3Count = parseInt(headingDataElement.getAttribute('data-h3')) || 0;
+    var h4Count = parseInt(headingDataElement.getAttribute('data-h4')) || 0;
+    var h5Count = parseInt(headingDataElement.getAttribute('data-h5')) || 0;
+    var h6Count = parseInt(headingDataElement.getAttribute('data-h6')) || 0;
+    
+    // رسم بياني للعناوين
+    var ctx = document.getElementById('headingsChart').getContext('2d');
+    var headingsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'],
+            datasets: [{
+                label: 'عدد العناوين',
+                data: [h1Count, h2Count, h3Count, h4Count, h5Count, h6Count],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    precision: 0
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+/* أنماط لتقرير تقييم المحتوى */
+.score-circle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.score-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.score-label {
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.score-excellent {
+    background-color: #28a745;
+}
+
+.score-good {
+    background-color: #17a2b8;
+}
+
+.score-average {
+    background-color: #ffc107;
+}
+
+.score-poor {
+    background-color: #dc3545;
+}
+
+.stat-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.stat-footer {
+    font-size: 0.8rem;
+}
+
+.recommendation-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.badge-good {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+
+.badge-warning {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #d39e00;
+}
+
+.badge-danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+}
+
+.structure-rating {
+    margin-top: 15px;
+}
+
+.structure-rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.structure-rating-label {
+    flex: 1;
+}
+
+.structure-rating-stars {
+    flex: 1;
+    text-align: right;
+}
+
+.recommendations-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.recommendation-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: flex-start;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.recommendation-icon {
+    color: #28a745;
+    margin-right: 10px;
+    padding-top: 2px;
+}
+
+.recommendation-text {
+    flex: 1;
+}
+</style>
+{% endblock %}
+{% endblock %}

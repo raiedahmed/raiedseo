@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}تحليل الكلمات المفتاحية لليوتيوب{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fab fa-youtube"></i> تحليل الكلمات المفتاحية لليوتيوب</h1>
+    <p class="section-description">اكتشف أفضل الكلمات المفتاحية لفيديوهات اليوتيوب حسب الموضوع</p>
+</div>
+
+<div class="youtube-keywords-form">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-key"></i> تحليل الكلمات المفتاحية</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">أدخل الموضوع الذي تريد تحليل الكلمات المفتاحية له للحصول على أفضل الكلمات المستخدمة في اليوتيوب.</p>
+                
+            <form action="{{ url_for('youtube_keywords') }}" method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="form-group">
+                            <label for="topic"><i class="fas fa-tag"></i> الموضوع *</label>
+                            <input type="text" class="form-control" id="topic" name="topic" placeholder="مثال: تعلم البرمجة" required>
+                            <div class="invalid-feedback">الرجاء إدخال موضوع للتحليل</div>
+                            <small class="form-text text-muted">أدخل الموضوع الرئيسي الذي تريد تحليل كلماته المفتاحية</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="language"><i class="fas fa-language"></i> اللغة</label>
+                            <select class="form-control" id="language" name="language">
+                                <option value="ar" selected>العربية</option>
+                                <option value="en">الإنجليزية</option>
+                            </select>
+                            <small class="form-text text-muted">اختر اللغة المستهدفة للكلمات المفتاحية</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="use_api" class="d-block" style="margin-bottom: 10px;"><i class="fas fa-key"></i> استخدام API اليوتيوب</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="use_api" name="use_api">
+                                <label class="custom-control-label" for="use_api">تمكين API اليوتيوب</label>
+                            </div>
+                            <small class="form-text text-muted">تمكين هذا الخيار يتطلب مفتاح API صالح في ملف .env</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 text-center mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg submit-btn">
+                            <i class="fas fa-search"></i> تحليل الكلمات المفتاحية
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mb-5">
+        <div class="card-header">
+            <h2><i class="fas fa-lightbulb"></i> نصائح لاختيار الكلمات المفتاحية</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>اختر كلمات ذات حجم بحث مناسب</h4>
+                            <p>ابحث عن الكلمات التي لها حجم بحث جيد ولكن مستوى منافسة معتدل لتحقيق أفضل النتائج.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>استهدف كلمات مفتاحية محددة</h4>
+                            <p>الكلمات المفتاحية الطويلة والمحددة غالباً ما تكون أسهل للتصنيف وتجذب جمهوراً أكثر استهدافاً.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>فهم نية المستخدم</h4>
+                            <p>تأكد من أن الكلمات المفتاحية تتوافق مع ما يبحث عنه المشاهدون بالفعل وتلبي احتياجاتهم.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>تحديث البحث بشكل دوري</h4>
+                            <p>قم بتحليل الكلمات المفتاحية بشكل دوري لمواكبة التغييرات في اتجاهات البحث واهتمامات الجمهور.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tip-item {
+        display: flex;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .tip-icon {
+        font-size: 24px;
+        color: #3498db;
+        margin-right: 15px;
+        padding-top: 5px;
+    }
+    
+    .tip-content h4 {
+        margin: 0 0 10px 0;
+        color: #343a40;
+    }
+    
+    .tip-content p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .custom-control.custom-switch {
+        padding-left: 3.25rem;
+    }
+</style>
+
+<script>
+    // التحقق من صحة النموذج
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

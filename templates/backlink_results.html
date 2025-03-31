@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+
+{% block title %}نتائج تحليل الروابط الخلفية{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fas fa-link"></i> نتائج تحليل الروابط الخلفية</h1>
+    <p class="section-description">تحليل الروابط الخلفية للنطاق: {{ domain }}</p>
+</div>
+
+<!-- ملخص التحليل -->
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-chart-bar"></i> ملخص التحليل</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">مجموع الروابط</h3>
+                    <div class="stat-value">{{ stats.total }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">المجالات الفريدة</h3>
+                    <div class="stat-value">{{ stats.unique_domains }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">روابط dofollow</h3>
+                    <div class="stat-value">{{ stats.dofollow }} ({{ (stats.dofollow / stats.total * 100)|round }}%)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">متوسط DA</h3>
+                    <div class="stat-value">{{ stats.avg_da|round(1) }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>توزيع جودة الروابط</h3>
+                <canvas id="quality-chart" width="400" height="300"></canvas>
+            </div>
+            <div class="col-md-6">
+                <h3>أنواع الروابط</h3>
+                <canvas id="link-types-chart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول الروابط الخلفية -->
+<div class="card mt-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-table"></i> الروابط الخلفية المكتشفة</h2>
+            <div class="filters">
+                <input type="text" id="search-backlinks" class="form-control" placeholder="بحث...">
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="backlinks-table">
+                <thead>
+                    <tr>
+                        <th>النطاق المصدر</th>
+                        <th>عنوان الصفحة</th>
+                        <th>DA</th>
+                        <th>نوع الرابط</th>
+                        <th>النص المرتبط</th>
+                        <th>تاريخ الاكتشاف</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backlink in backlinks %}
+                    <tr>
+                        <td>{{ backlink.source }}</td>
+                        <td>{{ backlink.title }}</td>
+                        <td>{{ backlink.da }}</td>
+                        <td>
+                            {% if backlink.type == "dofollow" %}
+                            <span class="badge bg-success">dofollow</span>
+                            {% else %}
+                            <span class="badge bg-secondary">nofollow</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ backlink.anchor_text }}</td>
+                        <td>{{ backlink.date_found }}</td>
+                        <td>
+                            <a href="{{ backlink.url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="فتح الرابط">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-info" title="تفاصيل الرابط">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- أزرار تصدير البيانات -->
+<div class="action-buttons mt-4 mb-4">
+    <a href="{{ url_for('backlinks') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-right"></i> العودة إلى صفحة تحليل الروابط
+    </a>
+    <div class="dropdown d-inline-block">
+        <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-download"></i> تصدير البيانات
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+            <li><a class="dropdown-item" href="#" id="export-csv">ملف CSV</a></li>
+            <li><a class="dropdown-item" href="#" id="export-excel">ملف Excel</a></li>
+            <li><a class="dropdown-item" href="#" id="export-pdf">ملف PDF</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        // تنفيذ البحث في الجدول
+        $("#search-backlinks").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#backlinks-table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+        
+        // رسم توزيع جودة الروابط
+        var qualityCtx = document.getElementById('quality-chart').getContext('2d');
+        var qualityChart = new Chart(qualityCtx, {
+            type: 'pie',
+            data: {
+                labels: ['جودة عالية (DA 40+)', 'جودة متوسطة (DA 20-40)', 'جودة منخفضة (DA <20)'],
+                datasets: [{
+                    data: [
+                        {{ quality_distribution.high }},
+                        {{ quality_distribution.medium }},
+                        {{ quality_distribution.low }}
+                    ],
+                    backgroundColor: [
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(231, 76, 60, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+        
+        // رسم أنواع الروابط
+        var typesCtx = document.getElementById('link-types-chart').getContext('2d');
+        var typesChart = new Chart(typesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Dofollow', 'Nofollow'],
+                datasets: [{
+                    data: [{{ stats.dofollow }}, {{ stats.nofollow }}],
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(149, 165, 166, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+        
+        // تنفيذ عمليات التصدير
+        $("#export-csv").click(function(e) {
+            e.preventDefault();
+            alert('جاري تصدير البيانات بتنسيق CSV...');
+            // في التطبيق الفعلي، هنا ستكون عملية التصدير الحقيقية
+        });
+        
+        $("#export-excel").click(function(e) {
+            e.preventDefault();
+            alert('جاري تصدير البيانات بتنسيق Excel...');
+            // في التطبيق الفعلي، هنا ستكون عملية التصدير الحقيقية
+        });
+        
+        $("#export-pdf").click(function(e) {
+            e.preventDefault();
+            alert('جاري تصدير البيانات بتنسيق PDF...');
+            // في التطبيق الفعلي، هنا ستكون عملية التصدير الحقيقية
+        });
+    });
+</script>
+{% endblock %}

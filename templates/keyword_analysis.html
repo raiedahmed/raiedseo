@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block page_title %}تحليل الكلمات المفتاحية{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">تحليل الكلمات المفتاحية</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <form action="{{ url_for('keyword_analysis') }}" method="post" class="mb-4">
+                            <div class="mb-3">
+                                <label for="keywords" class="form-label">الكلمات المفتاحية</label>
+                                <textarea class="form-control" id="keywords" name="keywords" rows="3" placeholder="أدخل الكلمات المفتاحية مفصولة بفواصل"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="language" class="form-label">اللغة</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="ar">العربية</option>
+                                    <option value="en">الإنجليزية</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="region" class="form-label">المنطقة</label>
+                                <select class="form-select" id="region" name="region">
+                                    <option value="sa">السعودية</option>
+                                    <option value="ae">الإمارات</option>
+                                    <option value="eg">مصر</option>
+                                    <option value="global">عالمي</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">تحليل الكلمات المفتاحية</button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">نصائح للكلمات المفتاحية</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> استخدم كلمات مفتاحية ذات صلة بمحتواك</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> ابحث عن الكلمات ذات حجم البحث المرتفع</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> انتبه للمنافسة على الكلمات المفتاحية</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> استخدم كلمات مفتاحية طويلة الذيل</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> قم بإدخال الكلمات المفتاحية التي ترغب في تحليلها للحصول على معلومات حول حجم البحث والمنافسة وتوصيات التحسين.
+                </div>
+                
+                <!-- هنا ستظهر نتائج التحليل بعد الإرسال -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // يمكن إضافة أي كود JavaScript خاص بالصفحة هنا
+    });
+</script>
+{% endblock %}

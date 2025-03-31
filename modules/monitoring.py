@@ -177,6 +177,121 @@ class MonitoringSystem:
                 self.logger.error(f"خطأ في تحميل سجل المهمة: {str(e)}")
         return []
     
+    def get_monitoring_data(self):
+        """الحصول على بيانات المراقبة الشاملة للعرض في واجهة المستخدم"""
+        monitoring_data = {
+            'scheduled_tasks': self.get_scheduled_tasks(),
+            'task_statistics': self._get_task_statistics(),
+            'recent_reports': self._get_recent_reports(limit=5),
+            'system_status': self._get_system_status()
+        }
+        
+        return monitoring_data
+    
+    def _get_task_statistics(self):
+        """الحصول على إحصائيات المهام المجدولة"""
+        stats = {
+            'total_tasks': len(self.scheduled_tasks),
+            'tasks_by_frequency': {},
+            'tasks_by_status': {
+                'active': 0,
+                'completed': 0,
+                'failed': 0
+            }
+        }
+        
+        # حساب عدد المهام حسب التردد
+        for task in self.scheduled_tasks:
+            frequency = task.get('frequency', 'weekly')
+            if frequency not in stats['tasks_by_frequency']:
+                stats['tasks_by_frequency'][frequency] = 0
+            stats['tasks_by_frequency'][frequency] += 1
+            
+            # تحديد حالة المهمة بناءً على آخر تنفيذ
+            history = self.get_task_history(task.get('id'))
+            if history:
+                last_result = history[-1].get('result', {})
+                status = last_result.get('status', 'active')
+                stats['tasks_by_status'][status] += 1
+            else:
+                stats['tasks_by_status']['active'] += 1
+        
+        return stats
+    
+    def _get_recent_reports(self, limit=5):
+        """الحصول على أحدث التقارير المنشأة"""
+        reports = []
+        
+        try:
+            # قراءة مجلد التقارير وترتيب الملفات حسب تاريخ التعديل
+            if os.path.exists(self.reports_dir):
+                files = os.listdir(self.reports_dir)
+                report_files = [f for f in files if f.endswith('.json')]
+                report_files.sort(key=lambda f: os.path.getmtime(os.path.join(self.reports_dir, f)), reverse=True)
+                
+                # اقتصار العدد حسب الحد المطلوب
+                report_files = report_files[:limit]
+                
+                for file_name in report_files:
+                    file_path = os.path.join(self.reports_dir, file_name)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            report_data = json.load(f)
+                            reports.append({
+                                'id': file_name.replace('.json', ''),
+                                'url': report_data.get('url', 'غير معروف'),
+                                'created_at': report_data.get('created_at', 'غير معروف'),
+                                'score': report_data.get('score', 0),
+                                'issues': len(report_data.get('issues', []))
+                            })
+                    except Exception as e:
+                        self.logger.error(f"خطأ في قراءة ملف التقرير {file_name}: {str(e)}")
+        except Exception as e:
+            self.logger.error(f"خطأ في الحصول على التقارير الأخيرة: {str(e)}")
+        
+        return reports
+    
+    def _get_system_status(self):
+        """الحصول على حالة نظام المراقبة"""
+        return {
+            'status': 'active',
+            'last_check': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'scheduler_running': self.scheduler.running,
+            'next_scheduled_tasks': self._get_next_scheduled_tasks(limit=3)
+        }
+    
+    def _get_next_scheduled_tasks(self, limit=3):
+        """الحصول على المهام المجدولة القادمة"""
+        next_tasks = []
+        
+        try:
+            jobs = self.scheduler.get_jobs()
+            # ترتيب المهام حسب وقت التنفيذ القادم
+            jobs.sort(key=lambda job: job.next_run_time)
+            
+            for i, job in enumerate(jobs):
+                if i >= limit:
+                    break
+                    
+                # البحث عن معلومات المهمة
+                task_info = None
+                for task in self.scheduled_tasks:
+                    if task.get('id') == job.id:
+                        task_info = task
+                        break
+                
+                if task_info:
+                    next_tasks.append({
+                        'id': job.id,
+                        'url': task_info.get('url', 'غير معروف'),
+                        'next_run': job.next_run_time.strftime('%Y-%m-%d %H:%M:%S') if job.next_run_time else 'غير محدد',
+                        'frequency': task_info.get('frequency', 'weekly')
+                    })
+        except Exception as e:
+            self.logger.error(f"خطأ في الحصول على المهام المجدولة القادمة: {str(e)}")
+        
+        return next_tasks
+    
     def update_task_history(self, task_id, result):
         """تحديث سجل تنفيذ المهمة"""
         history = self.get_task_history(task_id)
@@ -326,6 +441,34 @@ class MonitoringSystem:
         thread.start()
         
         self.logger.info(f"تم بدء تنفيذ المهمة {task_id} يدوياً")
+        return True
+    
+    def delete_scheduled_task(self, task_id):
+        """حذف مهمة مجدولة"""
+        # البحث عن المهمة في القائمة
+        task_index = None
+        for i, task in enumerate(self.scheduled_tasks):
+            if task.get('id') == task_id:
+                task_index = i
+                break
+        
+        if task_index is None:
+            self.logger.error(f"المهمة {task_id} غير موجودة")
+            return False
+        
+        # حذف المهمة من المجدول
+        try:
+            self.scheduler.remove_job(task_id)
+        except Exception as e:
+            self.logger.error(f"خطأ في حذف المهمة من المجدول: {str(e)}")
+        
+        # حذف المهمة من القائمة
+        del self.scheduled_tasks[task_index]
+        
+        # حفظ التغييرات
+        self._save_tasks()
+        
+        self.logger.info(f"تم حذف المهمة {task_id} بنجاح")
         return True
     
     def _generate_report(self, task_id, result_data, results_dir):

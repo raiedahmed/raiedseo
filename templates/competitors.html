@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block page_title %}تحليل المنافسين{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">تحليل المنافسين</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <form action="{{ url_for('competitors') }}" method="post" class="mb-4">
+                            <div class="mb-3">
+                                <label for="website" class="form-label">موقع الويب الخاص بك</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    <input type="url" class="form-control" id="website" name="website" placeholder="https://example.com" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="competitors" class="form-label">مواقع المنافسين</label>
+                                <textarea class="form-control" id="competitors" name="competitors" rows="3" placeholder="أدخل روابط مواقع المنافسين مفصولة بسطر جديد"></textarea>
+                                <div class="form-text">يمكنك ترك هذا الحقل فارغًا وسنقوم باكتشاف المنافسين تلقائيًا</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="analysis_type" class="form-label">نوع التحليل</label>
+                                <select class="form-select" id="analysis_type" name="analysis_type">
+                                    <option value="keywords">الكلمات المفتاحية</option>
+                                    <option value="backlinks">الروابط الخلفية</option>
+                                    <option value="content">المحتوى</option>
+                                    <option value="full">تحليل شامل</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">تحليل المنافسين</button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">فوائد تحليل المنافسين</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> اكتشاف الكلمات المفتاحية المربحة</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> تحديد مصادر الروابط الخلفية</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> فهم استراتيجيات المحتوى الناجحة</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> تحديد الفجوات والفرص في السوق</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> قم بإدخال موقع الويب الخاص بك ومواقع المنافسين للحصول على تحليل مقارن شامل يساعدك في تحسين استراتيجية السيو الخاصة بك.
+                </div>
+                
+                <!-- هنا ستظهر نتائج التحليل بعد الإرسال -->
+                <div class="competitors-results d-none">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">مقارنة الكلمات المفتاحية</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="keywordsChart" width="400" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">مقارنة الروابط الخلفية</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="backlinksChart" width="400" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // سيتم إضافة كود JavaScript لعرض الرسوم البيانية هنا عند تنفيذ التحليل
+    });
+</script>
+{% endblock %}

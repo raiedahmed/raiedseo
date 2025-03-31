@@ -1,0 +1,412 @@
+{% extends "layout.html" %}
+
+{% block title %}محلل الروابط الخلفية{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fas fa-link"></i> محلل الروابط الخلفية</h1>
+    <p class="section-description">تحليل وإدارة الروابط الخلفية لموقعك وإيجاد فرص جديدة</p>
+</div>
+
+<div class="card-tabs">
+    <ul class="tabs">
+        <li class="active" data-tab="analyze-backlinks">تحليل الروابط الخلفية</li>
+        <li data-tab="find-opportunities">البحث عن فرص جديدة</li>
+        <li data-tab="link-building">استراتيجيات بناء الروابط</li>
+        <li data-tab="competitors-backlinks">روابط المنافسين</li>
+    </ul>
+    
+    <div class="tab-content">
+        <!-- تحليل الروابط الخلفية -->
+        <div id="analyze-backlinks" class="tab-pane active">
+            <form action="{{ url_for('analyze_backlinks') }}" method="post">
+                <div class="form-group">
+                    <label for="backlink_domain">النطاق</label>
+                    <input type="text" id="backlink_domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="backlink_max_results">أقصى عدد للنتائج</label>
+                    <select id="backlink_max_results" name="max_results" class="form-control">
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="250">250</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                    </select>
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="backlink_use_api" name="use_api" value="1">
+                    <label class="form-check-label" for="backlink_use_api">استخدام API (أسرع وأكثر دقة)</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-search"></i> تحليل الروابط الخلفية</button>
+            </form>
+        </div>
+        
+        <!-- البحث عن فرص جديدة -->
+        <div id="find-opportunities" class="tab-pane">
+            <form action="{{ url_for('find_backlink_opportunities') }}" method="post">
+                <div class="form-group">
+                    <label for="opportunity_domain">النطاق</label>
+                    <input type="text" id="opportunity_domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opportunity_keywords">الكلمات المفتاحية ذات الصلة (اختياري)</label>
+                    <textarea id="opportunity_keywords" name="keywords" class="form-control" rows="3" placeholder="أدخل الكلمات المفتاحية مفصولة بفواصل"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opportunity_competitors">مواقع المنافسين (اختياري)</label>
+                    <textarea id="opportunity_competitors" name="competitors" class="form-control" rows="3" placeholder="أدخل نطاقات المنافسين - موقع واحد لكل سطر"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opportunity_strategy">استراتيجية البحث</label>
+                    <select id="opportunity_strategy" name="strategy" class="form-control">
+                        <option value="skyscraper">Skyscraper Technique</option>
+                        <option value="broken">Broken Link Building</option>
+                        <option value="competitor">Competitor Backlinks</option>
+                        <option value="guest">Guest Posting</option>
+                        <option value="resource">Resource Pages</option>
+                        <option value="all" selected>كل الاستراتيجيات</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><i class="fas fa-lightbulb"></i> البحث عن فرص جديدة</button>
+            </form>
+        </div>
+        
+        <!-- استراتيجيات بناء الروابط -->
+        <div id="link-building" class="tab-pane">
+            <div class="link-building-strategies">
+                <div class="strategy-card">
+                    <div class="strategy-header">
+                        <h3><i class="fas fa-arrow-up"></i> Skyscraper Technique</h3>
+                    </div>
+                    <div class="strategy-content">
+                        <p>تقنية ناطحة السحاب هي استراتيجية لإنشاء محتوى أفضل من المحتوى الموجود بالفعل ثم الاتصال بالمواقع التي تربط بهذا المحتوى الأقل جودة.</p>
+                        <ol>
+                            <li>ابحث عن محتوى ذي صلة بمجالك يحتوي على الكثير من الروابط الخلفية</li>
+                            <li>قم بإنشاء محتوى أفضل - أكثر شمولاً، محدث، أو تصميم أفضل</li>
+                            <li>تواصل مع المواقع التي تربط بالمحتوى الأصلي</li>
+                        </ol>
+                        <a href="#" class="btn btn-sm btn-primary strategy-btn" data-strategy="skyscraper">استخدام هذه الاستراتيجية</a>
+                    </div>
+                </div>
+                
+                <div class="strategy-card">
+                    <div class="strategy-header">
+                        <h3><i class="fas fa-unlink"></i> Broken Link Building</h3>
+                    </div>
+                    <div class="strategy-content">
+                        <p>استراتيجية بناء الروابط المكسورة تتضمن العثور على روابط مكسورة على مواقع أخرى ثم الاتصال بمالكي المواقع لاقتراح استبدالها برابط إلى موقعك.</p>
+                        <ol>
+                            <li>حدد صفحات مرجعية ذات صلة بمجالك</li>
+                            <li>ابحث عن روابط مكسورة على هذه الصفحات</li>
+                            <li>قدم محتوى بديل واتصل بمالك الموقع</li>
+                        </ol>
+                        <a href="#" class="btn btn-sm btn-primary strategy-btn" data-strategy="broken">استخدام هذه الاستراتيجية</a>
+                    </div>
+                </div>
+                
+                <div class="strategy-card">
+                    <div class="strategy-header">
+                        <h3><i class="fas fa-user-edit"></i> Guest Posting</h3>
+                    </div>
+                    <div class="strategy-content">
+                        <p>كتابة مقالات ضيف هي استراتيجية تتضمن إنشاء محتوى لمواقع أخرى مقابل رابط مرجعي إلى موقعك.</p>
+                        <ol>
+                            <li>ابحث عن مواقع ذات صلة بمجالك تقبل مقالات الضيوف</li>
+                            <li>اتصل بهم واقترح أفكارًا لمقالات ذات صلة</li>
+                            <li>اكتب محتوى عالي الجودة يتضمن رابطًا طبيعيًا إلى موقعك</li>
+                        </ol>
+                        <a href="#" class="btn btn-sm btn-primary strategy-btn" data-strategy="guest">استخدام هذه الاستراتيجية</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- روابط المنافسين -->
+        <div id="competitors-backlinks" class="tab-pane">
+            <form action="{{ url_for('analyze_competitor_backlinks') }}" method="post">
+                <div class="form-group">
+                    <label for="competitor_domain">نطاق المنافس</label>
+                    <input type="text" id="competitor_domain" name="competitor_domain" class="form-control" placeholder="competitor.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="your_domain">نطاقك</label>
+                    <input type="text" id="your_domain" name="your_domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="compare_type">نوع المقارنة</label>
+                    <select id="compare_type" name="compare_type" class="form-control">
+                        <option value="all">كل الروابط الخلفية</option>
+                        <option value="unique">الروابط الخلفية الفريدة للمنافس</option>
+                        <option value="common">الروابط الخلفية المشتركة</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><i class="fas fa-chart-pie"></i> تحليل روابط المنافسين</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- بيانات الروابط الخلفية -->
+<div class="card mt-4" id="backlink-stats" style="display: none;">
+    <div class="card-header">
+        <h2><i class="fas fa-chart-bar"></i> إحصاءات الروابط الخلفية</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">مجموع الروابط</h3>
+                    <div class="stat-value" id="total-backlinks">-</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">المجالات الفريدة</h3>
+                    <div class="stat-value" id="unique-domains">-</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">نسبة الروابط dofollow</h3>
+                    <div class="stat-value" id="dofollow-pct">-</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <h3 class="stat-title">متوسط DA</h3>
+                    <div class="stat-value" id="avg-da">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>توزيع جودة الروابط</h3>
+                <canvas id="quality-chart" width="400" height="300"></canvas>
+            </div>
+            <div class="col-md-6">
+                <h3>تطور الروابط الخلفية</h3>
+                <canvas id="growth-chart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول الروابط الخلفية -->
+<div class="card mt-4" id="backlink-table" style="display: none;">
+    <div class="card-header">
+        <h2><i class="fas fa-table"></i> الروابط الخلفية المكتشفة</h2>
+        <div class="filters">
+            <select id="filter-type" class="form-control">
+                <option value="all">كل الروابط</option>
+                <option value="dofollow">Dofollow فقط</option>
+                <option value="nofollow">Nofollow فقط</option>
+                <option value="high-da">DA عالي (40+)</option>
+            </select>
+            <input type="text" id="search-backlinks" class="form-control" placeholder="بحث...">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="backlinks-placeholder">
+            <p class="text-center"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</p>
+        </div>
+        <div class="backlinks-content" style="display: none;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>الموقع المصدر</th>
+                        <th>عنوان الصفحة</th>
+                        <th>نوع الرابط</th>
+                        <th>النص المرتبط</th>
+                        <th>DA</th>
+                        <th>تاريخ الاكتشاف</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="backlinks-tbody">
+                    <!-- سيتم ملء هذا الجدول ديناميكيًا عبر JavaScript -->
+                </tbody>
+            </table>
+            
+            <div class="pagination-container">
+                <button class="btn btn-sm btn-outline-primary" id="prev-page" disabled>السابق</button>
+                <span id="page-info">صفحة 1 من 1</span>
+                <button class="btn btn-sm btn-outline-primary" id="next-page" disabled>التالي</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        // التبديل بين التبويبات
+        $('.tabs li').click(function() {
+            var tabId = $(this).attr('data-tab');
+            
+            $('.tabs li').removeClass('active');
+            $('.tab-pane').removeClass('active');
+            
+            $(this).addClass('active');
+            $('#' + tabId).addClass('active');
+        });
+        
+        // إظهار البيانات عند تقديم النموذج (للأغراض التوضيحية)
+        $('form').on('submit', function(e) {
+            // e.preventDefault(); // تعليق لأغراض العرض فقط
+            
+            // showBacklinkResults();
+        });
+        
+        // أزرار استراتيجيات بناء الروابط
+        $('.strategy-btn').click(function(e) {
+            e.preventDefault();
+            var strategy = $(this).data('strategy');
+            
+            // تحويل إلى تبويب البحث عن فرص واختيار الاستراتيجية
+            $('.tabs li[data-tab="find-opportunities"]').click();
+            $('#opportunity_strategy').val(strategy);
+        });
+        
+        // وظيفة لعرض نتائج افتراضية للروابط الخلفية (لأغراض العرض)
+        function showBacklinkResults() {
+            // إظهار إحصاءات وجدول الروابط الخلفية
+            $('#backlink-stats, #backlink-table').show();
+            
+            // تعيين قيم الإحصاءات
+            $('#total-backlinks').text('1,245');
+            $('#unique-domains').text('328');
+            $('#dofollow-pct').text('67%');
+            $('#avg-da').text('28.5');
+            
+            // إنشاء رسومات بيانية افتراضية
+            setTimeout(function() {
+                createQualityChart();
+                createGrowthChart();
+                
+                // إخفاء مؤشر التحميل وإظهار المحتوى
+                $('.backlinks-placeholder').hide();
+                $('.backlinks-content').show();
+                
+                // ملء الجدول ببيانات افتراضية
+                var dummyData = [
+                    { source: 'blog.example.com', title: 'أفضل ممارسات تحسين محركات البحث', type: 'dofollow', anchor: 'تحسين السيو', da: 45, date: '2023-05-15' },
+                    { source: 'news.example.org', title: 'كيف تحسن ترتيب موقعك في جوجل', type: 'dofollow', anchor: 'ترتيب محركات البحث', da: 38, date: '2023-06-22' },
+                    { source: 'techblog.example.net', title: 'دليل شامل للروابط الخلفية', type: 'nofollow', anchor: 'الروابط الخلفية', da: 52, date: '2023-04-10' },
+                    { source: 'marketing.example.io', title: 'استراتيجيات التسويق الرقمي', type: 'dofollow', anchor: 'تسويق المحتوى', da: 33, date: '2023-07-05' },
+                    { source: 'seo.example.co', title: 'تحليل المنافسين في السيو', type: 'dofollow', anchor: 'تحليل المنافسين', da: 41, date: '2023-06-18' }
+                ];
+                
+                var tbody = $('#backlinks-tbody');
+                tbody.empty();
+                
+                for (var i = 0; i < dummyData.length; i++) {
+                    var item = dummyData[i];
+                    var row = '<tr>';
+                    row += '<td>' + item.source + '</td>';
+                    row += '<td>' + item.title + '</td>';
+                    
+                    if (item.type === 'dofollow') {
+                        row += '<td><span class="badge badge-success">dofollow</span></td>';
+                    } else {
+                        row += '<td><span class="badge badge-secondary">nofollow</span></td>';
+                    }
+                    
+                    row += '<td>' + item.anchor + '</td>';
+                    row += '<td>' + item.da + '</td>';
+                    row += '<td>' + item.date + '</td>';
+                    row += '<td>';
+                    row += '<button class="btn btn-sm btn-outline-primary mr-1" title="فتح الرابط"><i class="fas fa-external-link-alt"></i></button>';
+                    row += '<button class="btn btn-sm btn-outline-info mr-1" title="تحليل الرابط"><i class="fas fa-search"></i></button>';
+                    row += '<button class="btn btn-sm btn-outline-secondary" title="حفظ الملاحظات"><i class="fas fa-edit"></i></button>';
+                    row += '</td>';
+                    row += '</tr>';
+                    
+                    tbody.append(row);
+                }
+            }, 1000);
+        }
+        
+        // إنشاء رسم بياني لجودة الروابط
+        function createQualityChart() {
+            var ctx = document.getElementById('quality-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['عالي الجودة (DA 40+)', 'متوسط الجودة (DA 20-40)', 'منخفض الجودة (DA <20)'],
+                    datasets: [{
+                        data: [25, 45, 30],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(241, 196, 15, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(241, 196, 15, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // إنشاء رسم بياني لنمو الروابط
+        function createGrowthChart() {
+            var ctx = document.getElementById('growth-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                    datasets: [{
+                        label: 'عدد الروابط الخلفية',
+                        data: [450, 520, 580, 750, 890, 1245],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // تصفية الروابط الخلفية
+        $('#filter-type').change(function() {
+            // يمكن إضافة منطق التصفية الفعلي هنا
+        });
+        
+        // بحث في الروابط الخلفية
+        $('#search-backlinks').on('keyup', function() {
+            // يمكن إضافة منطق البحث الفعلي هنا
+        });
+    });
+</script>
+{% endblock %}

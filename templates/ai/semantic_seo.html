@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}تحليل السيو الدلالي - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">تحليل السيو الدلالي والمفاهيم المرتبطة</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">هذه الأداة تربط الكلمات المفتاحية بالمفاهيم المرتبطة بها باستخدام تقنية التضمين (Embeddings)</p>
+                    
+                    <form method="post" action="{{ url_for('analyze_semantic_seo') }}">
+                        <div class="form-group mb-3">
+                            <label for="main_keyword">الكلمة المفتاحية الرئيسية</label>
+                            <input type="text" class="form-control" id="main_keyword" name="main_keyword" required>
+                            <small class="form-text text-muted">أدخل الكلمة المفتاحية الرئيسية المستهدفة</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="related_keywords">الكلمات المفتاحية ذات الصلة (اختياري، كلمة واحدة في كل سطر)</label>
+                            <textarea class="form-control" id="related_keywords" name="related_keywords" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="content">المحتوى (اختياري)</label>
+                            <textarea class="form-control" id="content" name="content" rows="6"></textarea>
+                            <small class="form-text text-muted">أدخل المحتوى لتحليل مدى تغطيته للمفاهيم الدلالية (اختياري)</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">تحليل السيو الدلالي</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

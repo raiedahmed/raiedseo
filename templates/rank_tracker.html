@@ -1,0 +1,248 @@
+{% extends "layout.html" %}
+
+{% block title %}تتبع التصنيف في محركات البحث{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1><i class="fas fa-chart-line"></i> تتبع التصنيف في محركات البحث</h1>
+    <p class="section-description">راقب تصنيف موقعك والكلمات المفتاحية في محركات البحث</p>
+</div>
+
+<div class="card-tabs">
+    <ul class="tabs">
+        <li class="active" data-tab="track-keyword">تتبع كلمة مفتاحية</li>
+        <li data-tab="bulk-tracking">تتبع مجموعة كلمات</li>
+        <li data-tab="discover-keywords">اكتشاف الكلمات المتصدرة</li>
+        <li data-tab="view-history">عرض السجل</li>
+    </ul>
+    
+    <div class="tab-content">
+        <!-- تتبع كلمة مفتاحية -->
+        <div id="track-keyword" class="tab-pane active">
+            <form action="{{ url_for('track_keyword') }}" method="post">
+                <div class="form-group">
+                    <label for="keyword">الكلمة المفتاحية</label>
+                    <input type="text" id="keyword" name="keyword" class="form-control" placeholder="أدخل الكلمة المفتاحية للتتبع" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="domain">النطاق</label>
+                    <input type="text" id="domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="search_engine">محرك البحث</label>
+                    <select id="search_engine" name="search_engine" class="form-control">
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                        <option value="yahoo">Yahoo</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> تتبع التصنيف</button>
+            </form>
+        </div>
+        
+        <!-- تتبع مجموعة كلمات -->
+        <div id="bulk-tracking" class="tab-pane">
+            <form action="{{ url_for('bulk_track_keywords') }}" method="post">
+                <div class="form-group">
+                    <label for="keywords">الكلمات المفتاحية (كلمة واحدة لكل سطر)</label>
+                    <textarea id="keywords" name="keywords" class="form-control" rows="6" placeholder="أدخل الكلمات المفتاحية - كلمة واحدة لكل سطر" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="domain">النطاق</label>
+                    <input type="text" id="domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="search_engine">محرك البحث</label>
+                    <select id="search_engine" name="search_engine" class="form-control">
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                        <option value="yahoo">Yahoo</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> تتبع مجموعة الكلمات</button>
+            </form>
+        </div>
+        
+        <!-- اكتشاف الكلمات المتصدرة -->
+        <div id="discover-keywords" class="tab-pane">
+            <form action="{{ url_for('discover_keywords') }}" method="post">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> هذه الميزة تحاول اكتشاف الكلمات المفتاحية التي يتصدرها موقعك بالفعل في محركات البحث
+                </div>
+                
+                <div class="form-group">
+                    <label for="domain">النطاق</label>
+                    <input type="text" id="domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary"><i class="fas fa-lightbulb"></i> اكتشاف الكلمات المفتاحية</button>
+            </form>
+        </div>
+        
+        <!-- عرض السجل -->
+        <div id="view-history" class="tab-pane">
+            <form action="#" method="get" class="mb-4" id="history-form">
+                <div class="form-group">
+                    <label for="history_keyword">الكلمة المفتاحية</label>
+                    <input type="text" id="history_keyword" name="keyword" class="form-control" placeholder="أدخل الكلمة المفتاحية" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="history_domain">النطاق</label>
+                    <input type="text" id="history_domain" name="domain" class="form-control" placeholder="example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="history_days">عدد الأيام</label>
+                    <select id="history_days" name="days" class="form-control">
+                        <option value="7">7 أيام</option>
+                        <option value="30" selected>30 يوم</option>
+                        <option value="90">90 يوم</option>
+                        <option value="180">180 يوم</option>
+                        <option value="365">سنة كاملة</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="btn btn-primary" id="view-history-btn"><i class="fas fa-history"></i> عرض السجل</button>
+            </form>
+            
+            <div class="domain-export-section mt-4">
+                <h3>تصدير بيانات التصنيف</h3>
+                <form action="#" method="get" id="export-form">
+                    <div class="form-group">
+                        <label for="export_domain">النطاق</label>
+                        <input type="text" id="export_domain" name="domain" class="form-control" placeholder="example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="export_format">تنسيق التصدير</label>
+                        <select id="export_format" name="format" class="form-control">
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success" id="export-btn"><i class="fas fa-download"></i> تصدير البيانات</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- أحدث الكلمات المفتاحية المتتبعة -->
+<div class="card mt-4" id="top-keywords-card" style="display: none;">
+    <div class="card-header">
+        <h2><i class="fas fa-star"></i> أفضل الكلمات المفتاحية المتصدرة</h2>
+    </div>
+    <div class="card-body">
+        <div class="top-keywords-placeholder">
+            <p class="text-center"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</p>
+        </div>
+        <div class="top-keywords-content" style="display: none;">
+            <!-- سيتم ملء هذا القسم ديناميكيًا -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // التبديل بين التبويبات
+        $('.tabs li').click(function() {
+            var tabId = $(this).attr('data-tab');
+            
+            $('.tabs li').removeClass('active');
+            $('.tab-pane').removeClass('active');
+            
+            $(this).addClass('active');
+            $('#' + tabId).addClass('active');
+        });
+        
+        // عرض السجل
+        $('#view-history-btn').click(function() {
+            var keyword = $('#history_keyword').val();
+            var domain = $('#history_domain').val();
+            var days = $('#history_days').val();
+            
+            if (!keyword || !domain) {
+                alert('يرجى إدخال الكلمة المفتاحية والنطاق');
+                return;
+            }
+            
+            var url = '/rank-tracker/history/' + encodeURIComponent(keyword) + '/' + encodeURIComponent(domain) + '?days=' + days;
+            window.location.href = url;
+        });
+        
+        // تصدير البيانات
+        $('#export-btn').click(function() {
+            var domain = $('#export_domain').val();
+            var format = $('#export_format').val();
+            
+            if (!domain) {
+                alert('يرجى إدخال النطاق');
+                return;
+            }
+            
+            var url = '/rank-tracker/export/' + encodeURIComponent(domain) + '?format=' + format;
+            window.location.href = url;
+        });
+        
+        // تحميل أفضل الكلمات المفتاحية للنطاق المدخل
+        function loadTopKeywords() {
+            var domain = $('#domain').val();
+            
+            if (!domain) {
+                return;
+            }
+            
+            // هنا يمكن إضافة استدعاء AJAX لتحميل أفضل الكلمات المفتاحية
+            // لأغراض العرض، سنقوم بإظهار بيانات وهمية
+            
+            $('#top-keywords-card').show();
+            
+            setTimeout(function() {
+                $('.top-keywords-placeholder').hide();
+                $('.top-keywords-content').show();
+                
+                // بيانات وهمية للعرض
+                var dummyData = [
+                    { keyword: 'تحسين السيو', position: 1, url: 'https://example.com/blog/seo-optimization' },
+                    { keyword: 'تحليل المنافسين', position: 3, url: 'https://example.com/services/competitor-analysis' },
+                    { keyword: 'الكلمات المفتاحية', position: 5, url: 'https://example.com/blog/keywords' },
+                    { keyword: 'الروابط الخلفية', position: 7, url: 'https://example.com/services/backlinks' },
+                    { keyword: 'تحسين محركات البحث', position: 10, url: 'https://example.com/services/seo' }
+                ];
+                
+                var html = '<table class="table table-striped">';
+                html += '<thead><tr><th>الكلمة المفتاحية</th><th>الموقع</th><th>الصفحة</th></tr></thead>';
+                html += '<tbody>';
+                
+                for (var i = 0; i < dummyData.length; i++) {
+                    var item = dummyData[i];
+                    html += '<tr>';
+                    html += '<td>' + item.keyword + '</td>';
+                    html += '<td><span class="position-badge">' + item.position + '</span></td>';
+                    html += '<td><a href="' + item.url + '" target="_blank">' + item.url + '</a></td>';
+                    html += '</tr>';
+                }
+                
+                html += '</tbody></table>';
+                
+                $('.top-keywords-content').html(html);
+            }, 1000);
+        }
+        
+        // تحديث أفضل الكلمات المفتاحية عند تغيير النطاق
+        $('#domain').on('change', loadTopKeywords);
+    });
+</script>
+{% endblock %}

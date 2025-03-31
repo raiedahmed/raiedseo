@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}نتائج تحسين محتوى فيديو اليوتيوب - RSEO{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">نتائج تحسين محتوى فيديو اليوتيوب</h5>
+                    <a href="{{ url_for('optimize_video') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-redo me-1"></i> تحسين فيديو آخر
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">تم تحسين محتوى الفيديو</h5>
+                                <p class="mb-0">
+                                    فيما يلي توصيات لتحسين عنوان ووصف ووسوم الفيديو بناءً على تحليل خوارزميات يوتيوب
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- عنوان الفيديو -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-heading text-primary me-2"></i> عنوان الفيديو المُحسّن
+                        </h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="lead mb-2">{{ results.title }}</p>
+                                <div class="d-flex mt-3">
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ results.title }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ العنوان
+                                    </button>
+                                    {% if video_title %}
+                                    <div class="ms-3">
+                                        <span class="badge bg-info">التطابق مع SEO: {{ results.title_score }}%</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i> العنوان المثالي لليوتيوب يتكون من 60-70 حرفًا ويتضمن الكلمات المفتاحية الرئيسية في البداية.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- وصف الفيديو -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-align-left text-primary me-2"></i> وصف الفيديو المُحسّن
+                        </h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <pre class="youtube-description mb-2">{{ results.description }}</pre>
+                                <div class="d-flex mt-3">
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ results.description }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ الوصف
+                                    </button>
+                                    {% if video_description %}
+                                    <div class="ms-3">
+                                        <span class="badge bg-info">التطابق مع SEO: {{ results.description_score }}%</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i> الوصف المثالي يتضمن الكلمات المفتاحية في الفقرة الأولى ويحتوي على معلومات مفيدة وروابط ذات صلة.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- وسوم الفيديو -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">
+                            <i class="fas fa-tags text-primary me-2"></i> وسوم الفيديو المقترحة
+                        </h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="tags-container mb-2">
+                                    {% for tag in results.tags %}
+                                    <span class="badge bg-secondary p-2 me-2 mb-2">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="{{ results.tags|join(', ') }}">
+                                        <i class="fas fa-copy me-1"></i> نسخ الوسوم
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i> أضف ما بين 15-25 وسمًا باستخدام مزيج من الكلمات المفتاحية الرئيسية والفرعية والصياغات المختلفة.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- نصائح إضافية -->
+                    <div class="card border-primary mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">نصائح إضافية لتحسين ظهور الفيديو</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for tip in results.tips %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i> {{ tip }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- مدى التنافسية -->
+                    <div class="card border-info mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">تحليل تنافسية الكلمات المفتاحية</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="keywordsCompetition" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // نسخ المحتوى
+    var clipboard = new ClipboardJS('.copy-btn');
+    
+    clipboard.on('success', function(e) {
+        var btn = e.trigger;
+        btn.innerHTML = '<i class="fas fa-check me-1"></i> تم النسخ';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = btn.innerHTML.replace('<i class="fas fa-check me-1"></i> تم النسخ', '<i class="fas fa-copy me-1"></i> نسخ');
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+        
+        e.clearSelection();
+    });
+    
+    // رسم بياني للتنافسية
+    var ctx = document.getElementById('keywordsCompetition').getContext('2d');
+    var competitionChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: {{ results.competition.keywords|tojson }},
+            datasets: [{
+                label: 'مستوى التنافسية (من 0 إلى 10)',
+                data: {{ results.competition.scores|tojson }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)',
+                    'rgba(255, 99, 132, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        max: 10
+                    }
+                }]
+            }
+        }
+    });
+});
+</script>
+
+<style>
+.youtube-description {
+    white-space: pre-wrap;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.tags-container {
+    line-height: 2.5;
+}
+</style>
+{% endblock %}
+{% endblock %}
